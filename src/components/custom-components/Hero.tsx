@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { MoveRight } from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const heroDetails = {
   heading: "Most Secure Expense Manager",
@@ -21,20 +22,24 @@ const Hero = () => {
         <h2 className="text-xl text-primary-color text-opacity-70">
           {heroDetails.description}
         </h2>
-        <Button variant={"default"} className="bg-primary-color text-white hover:bg-opacity-85">
+        <Button
+          variant={"default"}
+          className="bg-primary-color text-white hover:bg-opacity-85 text-lg p-6"
+        >
           <Link href={"/sign-up"} className="w-full flex gap-2 items-center">
-            Get Started with free account! <MoveRight />
+            Start with free account! <MoveRight />
           </Link>
         </Button>
       </div>
-      <div className="flex justify-center">
-        <Image
-          src={"/images/main.png"}
-          width={550}
-          height={800}
-          alt="people splitting bill image"
-          className="rounded-md"
-        />
+      <div className="w-full">
+        <AspectRatio ratio={4 / 3} className="bg-muted">
+          <Image
+            src={"/images/main.png"}
+            fill
+            alt="people splitting bill image"
+            className="rounded-md object-cover"
+          />
+        </AspectRatio>
       </div>
     </ContainerSection>
   );

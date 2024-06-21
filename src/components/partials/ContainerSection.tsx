@@ -11,7 +11,7 @@ const ContainerSection: React.FC<ContainerSectionProps> = ({
   children,
   ...props
 }) => {
-  return <section className={cn("max-h-screen px-10 md:px-20 lg:px-32", className)} {...props}>{children}</section>;
+  return <section className={cn("px-10 md:px-20 lg:px-32", className)} {...props}>{children}</section>;
 };
 
 export default ContainerSection;

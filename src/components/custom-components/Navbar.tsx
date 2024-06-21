@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
-import { DoorClosed, LockIcon, MenuIcon, User } from "lucide-react";
+import { LockIcon, MenuIcon, User } from "lucide-react";
 import { ModeToggle } from "../partials/theme-button";
 import MappingContainer from "../partials/MappingContainer";
 import { Button } from "../ui/button";
@@ -70,7 +70,7 @@ const Navbar = () => {
         {navLinks.map((l, index) => {
           if (l.subLinks) {
             return (
-              <MappingContainer index={index}>
+              <div key={index}>
                 <NavigationMenu orientation="vertical">
                   <NavigationMenuList>
                     <NavigationMenuItem>
@@ -80,22 +80,22 @@ const Navbar = () => {
                       <NavigationMenuContent className="bg-light-color text-dark-color dark:bg-dark-color dark:text-light-color">
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                           {l.subLinks.map((s, index) => (
-                            <MappingContainer index={index}>
+                            <div key={index}>
                               <ListItem title={s.title} href={s.path}>
                                 {s.description}
                               </ListItem>
-                            </MappingContainer>
+                            </div>
                           ))}
                         </ul>
                       </NavigationMenuContent>
                     </NavigationMenuItem>
                   </NavigationMenuList>
                 </NavigationMenu>
-              </MappingContainer>
+              </div>
             );
           }
           return (
-            <MappingContainer index={index}>
+            <div key={index}>
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
@@ -105,7 +105,7 @@ const Navbar = () => {
                   </NavigationMenuItem>
                 </NavigationMenuList>
               </NavigationMenu>
-            </MappingContainer>
+            </div>
           );
         })}
       </div>
@@ -146,13 +146,13 @@ const Navbar = () => {
                   {navLinks.map((l, index) => {
                     if (l.subLinks) {
                       return (
-                        <MappingContainer index={index}>
+                        <div key={index}>
                           <NavigationMenuItem className="flex flex-col gap-4 justify-start items-start w-full">
                             {l.title}
                             <div className="flex flex-col gap-4 pl-4 w-full">
                               {l.subLinks?.map((s, index) => {
                                 return (
-                                  <MappingContainer index={index}>
+                                  <div key={index}>
                                     <Link
                                       onClick={() => setIsOpen(false)}
                                       className="border-l-2 pl-2"
@@ -160,22 +160,22 @@ const Navbar = () => {
                                     >
                                       {s.title}
                                     </Link>
-                                  </MappingContainer>
+                                  </div>
                                 );
                               })}
                             </div>
                           </NavigationMenuItem>
-                        </MappingContainer>
+                        </div>
                       );
                     }
                     return (
-                      <MappingContainer index={index}>
+                      <div key={index}>
                         <NavigationMenuItem>
                           <Link onClick={() => setIsOpen(false)} href={l.path}>
                             {l.title}
                           </Link>
                         </NavigationMenuItem>
-                      </MappingContainer>
+                      </div>
                     );
                   })}
                 </NavigationMenuList>

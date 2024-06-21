@@ -62,14 +62,14 @@ const HowItWorks = () => {
      <h2 className="text-secondary-color text-2xl font-bold text-center">How it works?</h2>
       <ol className="relative border-s border-gray-200 dark:border-gray-700">
         {steps.map((step, index) => (
-          <MappingContainer index={index}>
+          <div key={index}>
             <StepCard
               title={step.title}
               description={step.description}
               Icon={step.Icon}
               index={index+1}
             />
-          </MappingContainer>
+          </div>
         ))}
       </ol>
     </ContainerSection>

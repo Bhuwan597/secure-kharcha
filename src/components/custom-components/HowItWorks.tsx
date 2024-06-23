@@ -1,7 +1,7 @@
 import React from "react";
 import { PlusCircle, List, Send, CheckCircle } from "lucide-react";
 import ContainerSection from "../partials/ContainerSection";
-import MappingContainer from "../partials/MappingContainer";
+import MappingContainer from "../../lib/MappingContainer";
 
 interface StepInterface {
   title: string;

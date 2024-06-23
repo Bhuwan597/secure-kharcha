@@ -3,7 +3,6 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { LockIcon, MenuIcon, User } from "lucide-react";
 import { ModeToggle } from "../partials/theme-button";
-import MappingContainer from "../partials/MappingContainer";
 import { Button } from "../ui/button";
 import {
   Sheet,
@@ -22,6 +21,8 @@ import {
   NavigationMenuTrigger,
 } from "../ui/navigation-menu";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import CustomButton from "./CustomButton";
 
 interface NavLinksInterface {
   title: string;
@@ -37,7 +38,7 @@ const navLinks: NavLinksInterface[] = [
     path: "#",
     subLinks: [
       {
-        title: "Bill Splitter",
+        title: "Expense Splitter",
         path: "/splitter",
         description:
           "The Splitter service in Secure Kharcha simplifies expense splitting among groups, ensuring accurate calculations and transparent tracking. Effortlessly manage shared expenses with real-time updates and easy settlement options.",
@@ -56,6 +57,11 @@ const navLinks: NavLinksInterface[] = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  if(pathname.startsWith("/dashboard")){
+    return;
+  }
   return (
     <nav className="fixed top-0 w-full flex flex-row items-center justify-between p-4 border-b z-50 bg-light-color dark:bg-dark-color">
       <Link
@@ -110,11 +116,11 @@ const Navbar = () => {
         })}
       </div>
       <div className="hidden md:flex flex-row items-center gap-2 w-fit">
-        <Button className="bg-secondary-color text-white hover:bg-opacity-85">
+        <CustomButton className="bg-secondary-color">
           <Link href={"/sign-in"} className="flex flex-row gap-2">
             <User size={18} /> Sign in
           </Link>
-        </Button>
+        </CustomButton>
         <ModeToggle />
       </div>
 
@@ -127,7 +133,7 @@ const Navbar = () => {
         </SheetTrigger>
         <SheetContent
           side={"left"}
-          className="bg-light-color text-dark-color dark:text-light-color dark:bg-dark-color border-r-slate-500"
+          className=""
         >
           <SheetHeader>
             <SheetTitle className="flex flex-row justify-between items-center py-6 pr-6">
@@ -180,19 +186,18 @@ const Navbar = () => {
                   })}
                 </NavigationMenuList>
               </NavigationMenu>
-              <Button className="bg-secondary-color text-white">
+              <CustomButton className="bg-secondary-color">
                 <Link onClick={()=>setIsOpen(false)} href={"/sign-in"} className="flex flex-row gap-2">
                   <User size={18} /> Sign in
                 </Link>
-              </Button>
-              <Button
-                className="border-primary-color hover:bg-primary-color hover:text-white"
-                variant={"outline"}
+              </CustomButton>
+              <CustomButton
+                className="bg-primary-color"
               >
                 <Link onClick={()=>setIsOpen(false)} href={"/sign-in"} className="flex flex-row gap-2">
                   <User size={18} /> Create free account
                 </Link>
-              </Button>
+              </CustomButton>
             </SheetDescription>
           </SheetHeader>
         </SheetContent>

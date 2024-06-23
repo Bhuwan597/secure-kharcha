@@ -13,7 +13,7 @@ const Footer = () => {
           </div>
           <div className="">
             <p>&copy; {new Date().getFullYear()} Secure Kharcha. All rights reserved.</p>
-            <Link className="text-center" href={"https://facebook.com/bhuwanacharya.998"}>Bhuwan Acharya</Link>
+            <Link className="text-center" href={"https://facebook.com/bhuwanacharya.998"}>Bhuwan Acharya Upadhyaya</Link>
           </div>
         </div>
       </ContainerSection>

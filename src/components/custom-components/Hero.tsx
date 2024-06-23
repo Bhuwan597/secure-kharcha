@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { MoveRight } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import CustomButton from "./CustomButton";
 
 const heroDetails = {
   heading: "Most Secure Expense Manager",
@@ -22,14 +23,13 @@ const Hero = () => {
         <h2 className="text-xl text-primary-color text-opacity-70">
           {heroDetails.description}
         </h2>
-        <Button
-          variant={"default"}
+        <CustomButton
           className="bg-primary-color text-white hover:bg-opacity-85 text-lg p-6"
         >
           <Link href={"/sign-up"} className="w-full flex gap-2 items-center">
             Start with free account! <MoveRight />
           </Link>
-        </Button>
+        </CustomButton>
       </div>
       <div className="w-full">
         <AspectRatio ratio={4 / 3} className="bg-muted">

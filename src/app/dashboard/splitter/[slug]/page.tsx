@@ -1,8 +1,10 @@
+import ExpenseChart from "@/components/custom-components/dashboard/ExpenseChart";
+import ExpenseSummary from "@/components/custom-components/dashboard/ExpenseSummary";
 import GroupMembers from "@/components/custom-components/dashboard/GroupMembers";
 import GroupMenu from "@/components/custom-components/dashboard/GroupMenu";
 import Heading from "@/components/custom-components/dashboard/Heading";
 import RecentActivities from "@/components/custom-components/dashboard/RecentActivities";
-import { DataTableDemo } from "@/components/custom-components/dashboard/Transactions";
+import { TransactionsTable } from "@/components/custom-components/dashboard/TransactionsTable";
 import ContainerSection from "@/components/partials/ContainerSection";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Input } from "@/components/ui/input";
@@ -77,7 +79,9 @@ const Page = () => {
         <GroupMembers />
       </ContainerSection>
       <RecentActivities />
-      <DataTableDemo />
+      <TransactionsTable />
+      <ExpenseChart />
+      <ExpenseSummary />
     </>
   );
 };

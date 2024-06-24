@@ -8,6 +8,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ActivityInterface {
   id: number;
@@ -62,21 +63,15 @@ const RecentActivities = () => {
         Recent Activities
       </h2>
       <Separator className="my-4" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 place-items-center my-4">
-        {recentActivities.map((activity) => (
-          <Card key={activity.id} className="mb-4 w-fit h-full">
-            <CardHeader>
-              <CardTitle>{activity.action}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>{activity.description}</p>
-            </CardContent>
-            <CardFooter>
-              <span>{activity.timestamp}</span>
-            </CardFooter>
-          </Card>
+      <ScrollArea className="w-full mb-10 h-72">
+      {recentActivities.map((activity) => (
+          <div key={activity.id} className="flex flex-row justify-start items-center gap-2 my-4">
+            <p className="font-bold">{activity.user}</p>
+            <p className="">{activity.action}</p>
+            <p className="text-xs">({activity.timestamp})</p>
+          </div>
         ))}
-      </div>
+      </ScrollArea>
     </ContainerSection>
   );
 };

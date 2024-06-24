@@ -47,7 +47,11 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export type Payment = {
   id: string;
@@ -204,28 +208,45 @@ export const columns: ColumnDef<Payment>[] = [
       <div>
         <Popover>
           <PopoverTrigger asChild>
-          <Button variant="link" className="">
-              <div className="font-medium underline">{row.getValue("user")}</div>
+            <Button variant="link" className="">
+              <div className="font-medium underline">
+                {row.getValue("user")}
+              </div>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80"><div className="flex justify-between space-x-4">
+          <PopoverContent className="w-fit">
+            <div className="flex justify-start space-x-4">
               <Avatar>
                 <AvatarImage src="https://github.com/vercel.png" />
-                <AvatarFallback>VC</AvatarFallback>
+                <AvatarFallback>BU</AvatarFallback>
               </Avatar>
               <div className="space-y-1">
-                <h4 className="text-sm font-semibold">@nextjs</h4>
-                <p className="text-sm">
-                  The React Framework – created and maintained by @vercel.
-                </p>
-                <div className="flex items-center pt-2">
-                  <CalendarDays className="mr-2 h-4 w-4 opacity-70" />{" "}
-                  <span className="text-xs text-muted-foreground">
-                    Joined December 2021
+                <h4 className="text-sm font-semibold">
+                  {row.getValue("user")}
+                </h4>
+                <div className="flex flex-row items-center gap-4">
+                  <span className="font-medium text-xs">Contribution</span>
+                  <span>
+                    {new Intl.NumberFormat("en-NP", {
+                      style: "currency",
+                      currency: "NPR",
+                    }).format(1200)}
+                  </span>
+                </div>
+                <div className={"flex flex-row items-center gap-4"}>
+                  <span className="font-medium text-xs">Balance</span>
+                  <span
+                    className={-120 < 0 ? "text-red-600" : "text-green-600"}
+                  >
+                    {new Intl.NumberFormat("en-NP", {
+                      style: "currency",
+                      currency: "NPR",
+                    }).format(-120)}
                   </span>
                 </div>
               </div>
-            </div></PopoverContent>
+            </div>
+          </PopoverContent>
         </Popover>
       </div>
     ),
@@ -239,7 +260,17 @@ export const columns: ColumnDef<Payment>[] = [
   },
   {
     accessorKey: "amount",
-    header: () => <div className="text-center">Amount</div>,
+    header: ({ column }) => (
+      <div className="w-full flex flex-row justify-center items-center">
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+        Amount
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+        </div>
+    ),
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"));
 
@@ -249,7 +280,7 @@ export const columns: ColumnDef<Payment>[] = [
         currency: "NPR",
       }).format(amount);
 
-      return <div className="text-center font-medium">{formatted}</div>;
+      return <div className="text-center font-medium text-green-600">{formatted}</div>;
     },
   },
   {
@@ -289,7 +320,7 @@ export const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-export function DataTableDemo() {
+export function TransactionsTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

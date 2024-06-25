@@ -18,11 +18,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { auth } from "@/config/firebase.config";
+import { signOut } from "firebase/auth";
 import {
   BellDot,
   BellDotIcon,
   ChevronDown,
   Divide,
+  Loader2,
   LockIcon,
   MenuIcon,
   MoveDown,
@@ -30,15 +33,16 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
-
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const dashboardLinks = [
-    {title: "Expense Splitter", path: "/dashboard/splitter", Icon: Divide},
-    {title: "Expense Tracker", path: "/dashboard/tracker", Icon: TrendingUp},
-]
+  { title: "Expense Splitter", path: "/dashboard/splitter", Icon: Divide },
+  { title: "Expense Tracker", path: "/dashboard/tracker", Icon: TrendingUp },
+];
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, loading] = useAuthState(auth);
   return (
     <>
       <nav className="p-4 flex flex-row justify-between items-center">
@@ -47,10 +51,7 @@ const Sidebar = () => {
             <SheetTrigger onClick={() => setIsOpen(true)}>
               <MenuIcon size={30} className="text-secondary-color" />
             </SheetTrigger>
-            <SheetContent
-              side={"left"}
-              className=""
-            >
+            <SheetContent side={"left"} className="">
               <SheetHeader>
                 <SheetTitle>
                   <Link
@@ -62,16 +63,26 @@ const Sidebar = () => {
                   </Link>
                 </SheetTitle>
                 <SheetDescription>
-                 <div className="flex flex-col justify-center items-start gap-4 my-10">
-                          {dashboardLinks.map((d, index)=>{
-                            return (
-                              <Link href={d.path} onClick={()=>setIsOpen(false)} className="flex flex-row justify-start items-center gap-6 text-lg font-semibold p-2 hover:bg-slate-100 dark:hover:bg-slate-900 w-full rounded-md" key={index + 1}>
-                                  {<d.Icon className="text-secondary-color" size={25}/>}
-                                  {d.title}
-                              </Link>
-                            )
-                          })}
-                 </div>
+                  <div className="flex flex-col justify-center items-start gap-4 my-10">
+                    {dashboardLinks.map((d, index) => {
+                      return (
+                        <Link
+                          href={d.path}
+                          onClick={() => setIsOpen(false)}
+                          className="flex flex-row justify-start items-center gap-6 text-lg font-semibold p-2 hover:bg-slate-100 dark:hover:bg-slate-900 w-full rounded-md"
+                          key={index + 1}
+                        >
+                          {
+                            <d.Icon
+                              className="text-secondary-color"
+                              size={25}
+                            />
+                          }
+                          {d.title}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </SheetDescription>
               </SheetHeader>
             </SheetContent>
@@ -94,26 +105,41 @@ const Sidebar = () => {
             <BellDotIcon size={22} />
           </Button>
           <div className="flex flex-row gap-4">
-            <div className="flex-col gap-1 items-end hidden md:flex">
-              <p className="font-bold text-sm">Bhuwan Acharya Upadhyaya</p>
-              <p className="text-xs">v1acharya34@gmail.com</p>
-            </div>
+            {loading ? (
+              <Loader2
+                className="animate-spin text-secondary-color"
+                size={25}
+              />
+            ) : (
+              <>
+                {user && (
+                  <>
+                    <div className="flex-col gap-1 items-end hidden md:flex">
+                      <p className="font-bold text-sm">
+                        {user.displayName}
+                      </p>
+                      <p className="text-xs">{user.email}</p>
+                    </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex flex-row gap-2 items-center justify-center">
-                <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>BU</AvatarFallback>
-                </Avatar>
-                <ChevronDown size={15} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="flex flex-row gap-2 items-center justify-center">
+                        <Avatar>
+                          <AvatarImage src={user.photoURL || ""} />
+                          <AvatarFallback>{user.displayName}</AvatarFallback>
+                        </Avatar>
+                        <ChevronDown size={15} />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>Profile</DropdownMenuItem>
+                        <DropdownMenuItem onClick={()=> signOut(auth)}>Logout</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </div>
       </nav>

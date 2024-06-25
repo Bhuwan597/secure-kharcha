@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import TransactionForm from "./forms/TransactionForm";
+import TransactionForm from "../../forms/TransactionForm";
 import {
   Card,
   CardContent,

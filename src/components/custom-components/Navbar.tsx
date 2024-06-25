@@ -3,7 +3,6 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { LockIcon, MenuIcon, User } from "lucide-react";
 import { ModeToggle } from "../partials/theme-button";
-import { Button } from "../ui/button";
 import {
   Sheet,
   SheetContent,

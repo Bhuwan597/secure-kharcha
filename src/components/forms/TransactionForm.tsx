@@ -3,12 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import React, { useEffect, useState } from "react";
-import CustomButton from "../../CustomButton";
+import CustomButton from "../custom-components/CustomButton";
 import { Save } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import TransactionFormSchema from "../../../../../schemas/transaction.schema";
+import TransactionFormSchema from "../../../schemas/transaction.schema";
 import {
   Form,
   FormControl,

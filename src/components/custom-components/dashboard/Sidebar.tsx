@@ -34,6 +34,9 @@ import {
 import Link from "next/link";
 import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
+import CustomButton from "../CustomButton";
+import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/use-toast";
 
 const dashboardLinks = [
   { title: "Expense Splitter", path: "/dashboard/splitter", Icon: Divide },
@@ -41,8 +44,26 @@ const dashboardLinks = [
 ];
 
 const Sidebar = () => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [user, loading] = useAuthState(auth);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    signOut(auth)
+      .then(() => {
+        setLogoutLoading(false);
+        router.push("/sign-in");
+      })
+      .catch((error: any) => {
+        setLogoutLoading(false)
+        toast({
+          title: "Error.",
+          description: error.message,
+        });
+      });
+  };
   return (
     <>
       <nav className="p-4 flex flex-row justify-between items-center">
@@ -115,9 +136,7 @@ const Sidebar = () => {
                 {user && (
                   <>
                     <div className="flex-col gap-1 items-end hidden md:flex">
-                      <p className="font-bold text-sm">
-                        {user.displayName}
-                      </p>
+                      <p className="font-bold text-sm">{user.displayName}</p>
                       <p className="text-xs">{user.email}</p>
                     </div>
 
@@ -132,8 +151,20 @@ const Sidebar = () => {
                       <DropdownMenuContent>
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
-                        <DropdownMenuItem onClick={()=> signOut(auth)}>Logout</DropdownMenuItem>
+                        <DropdownMenuItem className="p-0 my-1">
+                          <CustomButton className="w-full bg-primary-color">
+                            Profile
+                          </CustomButton>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="p-0 my-1">
+                          <CustomButton
+                            className="w-full bg-secondary-color"
+                            onClick={handleLogout}
+                            loading={logoutLoading}
+                          >
+                            Logout
+                          </CustomButton>
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </>

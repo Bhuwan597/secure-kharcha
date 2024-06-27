@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import SignInSchema from "../../../schemas/signin.schema";
 import { z } from "zod";
@@ -16,14 +16,16 @@ import { Input } from "../ui/input";
 import CustomButton from "../custom-components/CustomButton";
 import { Separator } from "../ui/separator";
 import Image from "next/image";
-import { GoogleAuthProvider, User, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RegisterForm from "./RegisterForm";
 import { toast } from "../ui/use-toast";
-import { auth } from "@/config/firebase.config";
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, db } from "@/config/firebase.config";
+import { doc, setDoc } from "firebase/firestore";
 
 const SignInForm = () => {
+  const [googleLoginLoading, setGoogleLoginLoading] = useState(false);
+
   const form = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
   });
@@ -33,14 +35,43 @@ const SignInForm = () => {
   };
 
   const googleLogin = async () => {
+    setGoogleLoginLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      const res = signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider)
+        .then(async (result) => {
+          const user = result.user;
+          const userData = {
+            uid: user.uid,
+            displayName: user.displayName,
+            phoneNumber: user.phoneNumber,
+            email: user.email,
+            provider: user.providerData[0].providerId,
+            photo: user.photoURL,
+          };
+          await setDoc(doc(db, "users",  userData.uid ), userData).then((result)=>{
+            toast({
+              title: "Sign in Successfull."
+            })
+          }).catch(()=>{
+            toast({
+              title: "Error while sign in. "
+            })
+          })
+        })
+        .catch((error: any) => {
+          toast({
+            title: "Error",
+            description: error.message,
+          });
+        });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
       });
+    } finally {
+      setGoogleLoginLoading(false);
     }
   };
   return (
@@ -112,6 +143,7 @@ const SignInForm = () => {
             onClick={googleLogin}
             type="button"
             className="text-dark-color hover:text-light-color bg-slate-100 flex flex-row justify-center items-center gap-2"
+            loading={googleLoginLoading}
           >
             <Image
               src={"/svgs/google.svg"}

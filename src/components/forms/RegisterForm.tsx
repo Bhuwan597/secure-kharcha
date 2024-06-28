@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Form,
   FormControl,
@@ -14,16 +14,90 @@ import RegisterSchema from "../../../schemas/register.schema";
 import { Input } from "../ui/input";
 import CustomButton from "../custom-components/CustomButton";
 import { z } from "zod";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
+import { toast } from "../ui/use-toast";
+import { auth, db } from "@/config/firebase.config";
+import { doc, setDoc } from "firebase/firestore";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Info } from "lucide-react";
 
 const RegisterForm = () => {
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
   });
-  const onSubmit = (data: z.infer<typeof RegisterSchema>) => {
-    console.log(data.email, data.password);
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState(false);
+  const onSubmit = async(data: z.infer<typeof RegisterSchema>) => {
+    setRegisterLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, data.email, data.password).then(
+        async ({ user }) => {
+          const userData = {
+            uid: user.uid,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            displayName: data.firstName + " " + data.lastName,
+            phoneNumber: data.phoneNumber,
+            email: user.email,
+            provider: user.providerData[0].providerId,
+            photo: user.photoURL,
+          };
+          await setDoc(doc(db, "users", userData.uid), userData)
+            .then((result) => {
+              form.reset({
+                firstName: "",
+                lastName: "",
+                email: "",
+                phoneNumber: "",
+                password: "",
+                confirmPassword: "",
+              });
+              toast({
+                title: "Registration Successfull.",
+              });
+            })
+            .catch(() => {
+              toast({
+                title: "Error while registration. ",
+              });
+            });
+
+          await sendEmailVerification(user)
+            .then(() => {
+              setVerifyEmail(true);
+            })
+            .catch(() => {
+              toast({
+                title: "Error!",
+                description: "verification email was not sent.",
+              });
+            });
+        }
+      );
+    } catch (error: any) {
+      toast({
+        title: "Error!",
+        description: error.message,
+      });
+    } finally {
+      setRegisterLoading(false);
+    }
   };
   return (
     <Form {...form}>
+      {verifyEmail && (
+        <Alert className="bg-yellow-200">
+          <Info size={20} />
+          <AlertTitle>Verification!</AlertTitle>
+          <AlertDescription>
+            Please, verify your email address.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-4 py-4"
@@ -67,7 +141,11 @@ const RegisterForm = () => {
               <div className="flex flex-col gap-2 justify-start items-start">
                 <FormLabel>Phone Number (with country code)</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="Your phone number" {...field} />
+                  <Input
+                    type="tel"
+                    placeholder="Your phone number"
+                    {...field}
+                  />
                 </FormControl>
               </div>
               <FormMessage />
@@ -130,7 +208,11 @@ const RegisterForm = () => {
           )}
         />
 
-        <CustomButton className="w-full bg-secondary-color" type="submit">
+        <CustomButton
+          loading={registerLoading}
+          className="w-full bg-secondary-color"
+          type="submit"
+        >
           Register
         </CustomButton>
       </form>

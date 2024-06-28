@@ -16,22 +16,75 @@ import { Input } from "../ui/input";
 import CustomButton from "../custom-components/CustomButton";
 import { Separator } from "../ui/separator";
 import Image from "next/image";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RegisterForm from "./RegisterForm";
 import { toast } from "../ui/use-toast";
 import { auth, db } from "@/config/firebase.config";
 import { doc, setDoc } from "firebase/firestore";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { AlertDialogFooter, AlertDialogHeader } from "../ui/alert-dialog";
+import { Label } from "../ui/label";
+import { Button } from "../ui/button";
+import ResetPasswordForm from "./ResetPasswordForm";
 
 const SignInForm = () => {
   const [googleLoginLoading, setGoogleLoginLoading] = useState(false);
+  const [signInLoading, setSignInLoading] = useState(false);
+  const [resetPasswordDialog, setResetPasswordDialog] = useState(false);
 
   const form = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
   });
 
-  const onSubmit = (data: z.infer<typeof SignInSchema>) => {
-    console.log(data.email, data.password);
+  const onSubmit = async (data: z.infer<typeof SignInSchema>) => {
+    setSignInLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, data.email, data.password)
+        .then((userCredential) => {
+          if (userCredential.user.emailVerified) {
+            toast({
+              title: "Sign in successfull.",
+               description: `You are now signed in as ${data.email}`
+            });
+          } else {
+            signOut(auth);
+            toast({
+              title: "Verification!",
+              description: "Please,verify your email address.",
+            });
+          }
+        })
+        .catch((error) => {
+          toast({
+            title: "Error!",
+            description: "Invalid Credentials.",
+          });
+        });
+    } catch (error) {
+      toast({
+        title: "Error!",
+        description: "Please try again later.",
+      });
+    } finally {
+      setSignInLoading(false);
+      form.reset({
+        email: "",
+        password: "",
+      });
+    }
   };
 
   const googleLogin = async () => {
@@ -49,15 +102,18 @@ const SignInForm = () => {
             provider: user.providerData[0].providerId,
             photo: user.photoURL,
           };
-          await setDoc(doc(db, "users",  userData.uid ), userData).then((result)=>{
-            toast({
-              title: "Sign in Successfull."
+          await setDoc(doc(db, "users", userData.uid), userData)
+            .then((result) => {
+              toast({
+                title: "Sign in Successfull.",
+                description: `You are now signed in as ${userData.displayName}`
+              });
             })
-          }).catch(()=>{
-            toast({
-              title: "Error while sign in. "
-            })
-          })
+            .catch(() => {
+              toast({
+                title: "Error while sign in.",
+              });
+            });
         })
         .catch((error: any) => {
           toast({
@@ -74,6 +130,8 @@ const SignInForm = () => {
       setGoogleLoginLoading(false);
     }
   };
+
+  const handleForgotPassword = async () => {};
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="w-full max-w-sm md:max-w-md lg:max-w-lg px-8 py-4 shadow-md rounded-md flex flex-col">
@@ -103,7 +161,6 @@ const SignInForm = () => {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="password"
@@ -123,8 +180,8 @@ const SignInForm = () => {
                     </FormItem>
                   )}
                 />
-
                 <CustomButton
+                  loading={signInLoading}
                   className="w-full bg-secondary-color"
                   type="submit"
                 >
@@ -132,6 +189,34 @@ const SignInForm = () => {
                 </CustomButton>
               </form>
             </Form>
+
+            <Dialog
+              open={resetPasswordDialog}
+              onOpenChange={setResetPasswordDialog}
+            >
+              <DialogTrigger
+                asChild
+                onClick={() => setResetPasswordDialog(true)}
+              >
+                <div className="flex w-full justify-end">
+                  <button
+                    type="button"
+                    className="text-primary-color hover:bg-slate-100 py-1 px-3 rounded-md"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <AlertDialogHeader>
+                  <DialogTitle>Reset Password</DialogTitle>
+                  <DialogDescription>
+                    Press continue to get password reset link.
+                  </DialogDescription>
+                </AlertDialogHeader>
+                <ResetPasswordForm setIsDialogOpen={setResetPasswordDialog} />
+              </DialogContent>
+            </Dialog>
           </TabsContent>
           <TabsContent value="register">
             <RegisterForm />

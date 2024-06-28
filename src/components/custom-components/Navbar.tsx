@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
-import { LockIcon, MenuIcon, User } from "lucide-react";
+import { LayoutDashboard, LockIcon, MenuIcon, User } from "lucide-react";
 import { ModeToggle } from "../partials/theme-button";
 import {
   Sheet,
@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import CustomButton from "./CustomButton";
+import { useAuth } from "@/contexts/user.context";
 
 interface NavLinksInterface {
   title: string;
@@ -57,8 +58,9 @@ const navLinks: NavLinksInterface[] = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { userDetails } = useAuth();
 
-  if(pathname.startsWith("/dashboard")){
+  if (pathname.startsWith("/dashboard")) {
     return;
   }
   return (
@@ -115,11 +117,19 @@ const Navbar = () => {
         })}
       </div>
       <div className="hidden md:flex flex-row items-center gap-2 w-fit">
-        <CustomButton className="bg-secondary-color">
-          <Link href={"/sign-in"} className="flex flex-row gap-2">
-            <User size={18} /> Sign in
-          </Link>
-        </CustomButton>
+        {userDetails ? (
+          <CustomButton className="bg-secondary-color">
+            <Link href={"/dashboard"} className="flex flex-row gap-2">
+              <LayoutDashboard size={18} /> Dashboard
+            </Link>
+          </CustomButton>
+        ) : (
+          <CustomButton className="bg-secondary-color">
+            <Link href={"/sign-in"} className="flex flex-row gap-2">
+              <User size={18} /> Sign in
+            </Link>
+          </CustomButton>
+        )}
         <ModeToggle />
       </div>
 
@@ -130,10 +140,7 @@ const Navbar = () => {
         >
           <MenuIcon size={30} className="text-secondary-color" />
         </SheetTrigger>
-        <SheetContent
-          side={"left"}
-          className=""
-        >
+        <SheetContent side={"left"} className="">
           <SheetHeader>
             <SheetTitle className="flex flex-row justify-between items-center py-6 pr-6">
               <Link
@@ -186,14 +193,20 @@ const Navbar = () => {
                 </NavigationMenuList>
               </NavigationMenu>
               <CustomButton className="bg-secondary-color">
-                <Link onClick={()=>setIsOpen(false)} href={"/sign-in"} className="flex flex-row gap-2">
+                <Link
+                  onClick={() => setIsOpen(false)}
+                  href={"/sign-in"}
+                  className="flex flex-row gap-2"
+                >
                   <User size={18} /> Sign in
                 </Link>
               </CustomButton>
-              <CustomButton
-                className="bg-primary-color"
-              >
-                <Link onClick={()=>setIsOpen(false)} href={"/sign-in"} className="flex flex-row gap-2">
+              <CustomButton className="bg-primary-color">
+                <Link
+                  onClick={() => setIsOpen(false)}
+                  href={"/sign-in"}
+                  className="flex flex-row gap-2"
+                >
                   <User size={18} /> Create free account
                 </Link>
               </CustomButton>

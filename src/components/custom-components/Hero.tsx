@@ -26,7 +26,7 @@ const Hero = () => {
         <CustomButton
           className="bg-primary-color text-white hover:bg-opacity-85 text-lg p-6"
         >
-          <Link href={"/sign-up"} className="w-full flex gap-2 items-center">
+          <Link href={"/sign-in"} className="w-full flex gap-2 items-center">
             Start with free account! <MoveRight />
           </Link>
         </CustomButton>

@@ -3,7 +3,7 @@ import React from 'react'
 
 const ButtonLoader = () => {
   return (
-   <Loader2 size={20} className='text-secondary-color animate-spin'  />
+   <Loader2 size={20} className='text-primary-color animate-spin'  />
   )
 }
 

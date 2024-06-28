@@ -33,10 +33,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import CustomButton from "../CustomButton";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/user.context";
 
 const dashboardLinks = [
   { title: "Expense Splitter", path: "/dashboard/splitter", Icon: Divide },
@@ -46,9 +46,8 @@ const dashboardLinks = [
 const Sidebar = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [user, loading] = useAuthState(auth);
+  const {userDetails} = useAuth()
   const [logoutLoading, setLogoutLoading] = useState(false);
-
   const handleLogout = async () => {
     setLogoutLoading(true);
     signOut(auth)
@@ -126,25 +125,18 @@ const Sidebar = () => {
             <BellDotIcon size={22} />
           </Button>
           <div className="flex flex-row gap-4">
-            {loading ? (
-              <Loader2
-                className="animate-spin text-secondary-color"
-                size={25}
-              />
-            ) : (
-              <>
-                {user && (
+                {userDetails && (
                   <>
                     <div className="flex-col gap-1 items-end hidden md:flex">
-                      <p className="font-bold text-sm">{user.displayName}</p>
-                      <p className="text-xs">{user.email}</p>
+                      <p className="font-bold text-sm">{userDetails.displayName}</p>
+                      <p className="text-xs">{userDetails.email}</p>
                     </div>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger className="flex flex-row gap-2 items-center justify-center">
                         <Avatar>
-                          <AvatarImage src={user.photoURL || ""} />
-                          <AvatarFallback>{user.displayName}</AvatarFallback>
+                          <AvatarImage src={userDetails.photo || ""} />
+                          <AvatarFallback>{userDetails.displayName}</AvatarFallback>
                         </Avatar>
                         <ChevronDown size={15} />
                       </DropdownMenuTrigger>
@@ -169,8 +161,7 @@ const Sidebar = () => {
                     </DropdownMenu>
                   </>
                 )}
-              </>
-            )}
+              
           </div>
         </div>
       </nav>

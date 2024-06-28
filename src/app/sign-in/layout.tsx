@@ -23,7 +23,7 @@ export default function RootLayout({
         description: error.message,
       });
       signOut(auth);
-    } else if (user) {
+    } else if (user?.emailVerified) {
       router.replace("/dashboard");
     }
   }, [loading, error, user, router]);
@@ -31,6 +31,7 @@ export default function RootLayout({
   if (loading) {
     return <Loading />;
   }
+
 
   return (
     <>

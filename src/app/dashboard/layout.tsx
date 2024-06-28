@@ -24,7 +24,8 @@ export default function RootLayout({
         description: error.message,
       });
       signOut(auth);
-    } else if (!user) {
+    } else if (!user || !user.emailVerified) {
+      signOut(auth)
       router.push("/sign-in");
     }
   }, [loading, error, user, router]);
@@ -33,10 +34,14 @@ export default function RootLayout({
     return <Loading />;
   }
 
+  if(!user || !user.emailVerified){
+    return null;
+  }
+
   return (
     <>
       <Sidebar />
-      {user && children}
+      {user && user.emailVerified &&  children}
     </>
   );
 }

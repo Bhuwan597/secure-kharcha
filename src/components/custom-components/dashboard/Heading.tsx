@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 
 
-const Heading = ({title, className=""}: {title: string, className?:string}) => {
+const Heading = ({title, className=""}: {title?: string, className?:string}) => {
   return (
     <>
     <ContainerSection className={cn("w-full flex flex-row flex-wrap justify-between items-center py-10 md:px-20", className)}>

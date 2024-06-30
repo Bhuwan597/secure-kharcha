@@ -7,6 +7,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase.config";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { GroupContextProvider } from "@/contexts/group.context";
 
 export default function RootLayout({
   children,
@@ -40,8 +41,10 @@ export default function RootLayout({
 
   return (
     <>
+    <GroupContextProvider>
       <Sidebar />
       {user && user.emailVerified &&  children}
+    </GroupContextProvider>
     </>
   );
 }

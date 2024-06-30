@@ -11,7 +11,7 @@ const AuthContext = createContext<{ userDetails: UserDetailsInterface | null }>(
   { userDetails: null }
 );
 
-interface UserDetailsInterface {
+export interface UserDetailsInterface {
   uid?: string;
   firstName?: string;
   lastName?: string;

@@ -22,6 +22,7 @@ import { toast } from "../ui/use-toast";
 import { GroupInterface } from "@/types/group.types";
 import { addDoc, collection, getDoc } from "firebase/firestore";
 import { db } from "@/config/firebase.config";
+import { useGroup } from "@/contexts/group.context";
 
 const CreateGroupForm = ({
   setIsDialogOpen,
@@ -29,6 +30,7 @@ const CreateGroupForm = ({
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { userDetails } = useAuth();
+  const { refetch } = useGroup();
   const form = useForm<z.infer<typeof GroupSchema>>({
     resolver: zodResolver(GroupSchema),
     defaultValues: {
@@ -36,6 +38,8 @@ const CreateGroupForm = ({
       description: "",
       coverPhoto: "",
       owner: userDetails?.uid,
+      createdAt: Date.now().toLocaleString(),
+      token: Math.random().toString(36).substr(2),
     },
   });
   const mutation = useMutation({
@@ -44,12 +48,17 @@ const CreateGroupForm = ({
         name: formData.name,
         description: formData.description,
         owner: formData.owner,
+        members: [formData.owner],
+        token: formData.token,
       });
       if (!docRef) {
         throw new Error("Failed to create group");
       }
       const docSnap = await getDoc(docRef);
-      const groupData = { uid: docSnap.id, ...docSnap.data() } as GroupInterface;
+      const groupData = {
+        uid: docSnap.id,
+        ...docSnap.data(),
+      } as GroupInterface;
       return groupData;
     },
     onSuccess: (data: GroupInterface) => {
@@ -57,9 +66,11 @@ const CreateGroupForm = ({
         name: "",
         coverPhoto: "",
         description: "",
+        createdAt: "",
+        token: "",
       });
       setIsDialogOpen(false);
-      console.log(data);
+      refetch();
       toast({
         title: "Successfull.",
         description: `${data.name} group was created.`,

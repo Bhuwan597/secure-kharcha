@@ -39,8 +39,8 @@ const GroupMembers = ({
   members: (UserDetailsInterface | null)[] | null;
   owner: UserDetailsInterface | null;
 }) => {
-  if (!members) return;
   const { userDetails } = useAuth();
+  if (!members) return;
   return (
     <>
       <div className="w-full mt-4">

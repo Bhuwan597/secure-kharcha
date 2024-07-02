@@ -46,7 +46,7 @@ const dashboardLinks = [
 const Sidebar = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const {userDetails} = useAuth()
+  const { userDetails } = useAuth();
   const [logoutLoading, setLogoutLoading] = useState(false);
   const handleLogout = async () => {
     setLogoutLoading(true);
@@ -56,7 +56,7 @@ const Sidebar = () => {
         router.push("/sign-in");
       })
       .catch((error: any) => {
-        setLogoutLoading(false)
+        setLogoutLoading(false);
         toast({
           title: "Error.",
           description: error.message,
@@ -125,43 +125,39 @@ const Sidebar = () => {
             <BellDotIcon size={22} />
           </Button>
           <div className="flex flex-row gap-4">
-                {userDetails && (
-                  <>
-                    <div className="flex-col gap-1 items-end hidden md:flex">
-                      <p className="font-bold text-sm">{userDetails.displayName}</p>
-                      <p className="text-xs">{userDetails.email}</p>
-                    </div>
+            {userDetails && (
+              <>
+                <div className="flex-col gap-1 items-end hidden md:flex">
+                  <p className="font-bold text-sm">{userDetails.displayName}</p>
+                  <p className="text-xs">{userDetails.email}</p>
+                </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="flex flex-row gap-2 items-center justify-center">
-                        <Avatar>
-                          <AvatarImage src={userDetails.photo || ""} />
-                          <AvatarFallback>{userDetails.displayName}</AvatarFallback>
-                        </Avatar>
-                        <ChevronDown size={15} />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="p-0 my-1">
-                          <CustomButton className="w-full bg-primary-color">
-                            Profile
-                          </CustomButton>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="p-0 my-1">
-                          <CustomButton
-                            className="w-full bg-secondary-color"
-                            onClick={handleLogout}
-                            loading={logoutLoading}
-                          >
-                            Logout
-                          </CustomButton>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                )}
-              
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex flex-row gap-2 items-center justify-center">
+                    <Avatar>
+                      <AvatarImage
+                        src={userDetails.photo || "/images/default-user.svg"}
+                      />
+                      <AvatarFallback>{userDetails.displayName}</AvatarFallback>
+                    </Avatar>
+                    <ChevronDown size={15} />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer">
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer text-red-600"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
         </div>
       </nav>

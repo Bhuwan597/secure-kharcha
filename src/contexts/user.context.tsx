@@ -1,10 +1,17 @@
 "use client";
 import Loading from "@/app/loading";
 import { toast } from "@/components/ui/use-toast";
-import { auth, db } from "@/config/firebase.config";
+import { auth } from "@/config/firebase.config";
+import { useQuery } from "@tanstack/react-query";
 import { signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+} from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 const AuthContext = createContext<{ userDetails: UserDetailsInterface | null }>(
@@ -12,14 +19,18 @@ const AuthContext = createContext<{ userDetails: UserDetailsInterface | null }>(
 );
 
 export interface UserDetailsInterface {
-  uid?: string;
+  _id?: string;
   firstName?: string;
   lastName?: string;
   displayName?: string;
   email?: string;
-  phoneNumber?: string;
+  eSewa?: string;
   photo?: string;
   provider?: string;
+  token?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  emailVerified: boolean;
 }
 
 export const AuthContextProvider = ({
@@ -27,56 +38,72 @@ export const AuthContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading, authError] = useAuthState(auth);
   const [userDetails, setUserDetails] = useState<UserDetailsInterface | null>(
     null
   );
+  const contextValue = useMemo(() => ({ userDetails }), [userDetails]);
+
+  const fetchUser = useCallback(async () => {
+    if (!user) return null;
+    const token = await user.getIdToken(true);
+    if (!token) return null;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message);
+    }
+
+    const data = await res.json();
+    setUserDetails({
+      ...data,
+      token: token,
+    });
+
+    return data;
+  }, [user]);
+
+  const {
+    data,
+    isLoading,
+    error: fetchError,
+  } = useQuery({
+    queryKey: ["user-details"],
+    queryFn: fetchUser,
+    enabled: !!user,
+  });
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!user || loading) return;
+    if (!user) {
+      setUserDetails(null);
+    }
+  }, [user]);
 
-      try {
-        const uid = user.uid;
-        const userDocRef = doc(db, "users", uid);
-        const userDocSnap = await getDoc(userDocRef);
+  const isAuthenticating = isLoading || loading;
 
-        if (!userDocSnap.exists()) {
-          toast({
-            title: "No user found.",
-          });
-          signOut(auth);
-          return;
-        }
-
-        const userData = userDocSnap.data() as UserDetailsInterface;
-        setUserDetails(userData);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        // Handle error fetching user data
-      }
-    };
-
-    fetchUserData();
-  }, [user, loading]);
-
-  if (loading) {
-    // Loading state while Firebase auth is initializing
+  // Move conditional rendering logic outside the hook calls
+  if (isAuthenticating) {
     return <Loading />;
   }
 
-  if (error) {
+  if (authError || fetchError) {
     toast({
       title: "Authentication error.",
+      description: authError?.message || fetchError?.message,
     });
     signOut(auth);
     return null;
   }
 
   return (
-    <AuthContext.Provider value={{ userDetails }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 

@@ -39,16 +39,12 @@ import { QRCodeSVG } from "qrcode.react";
 import GenerateLink from "./GenerateLink";
 import { UserDetailsInterface } from "@/contexts/user.context";
 import { GroupInterface } from "@/types/group.types";
+import { useGroupSlug } from "@/contexts/group-slug.context";
 
-const GroupMenu = ({
-  owner,
-  groupInfo,
-}: {
-  owner: UserDetailsInterface | null;
-  groupInfo: GroupInterface;
-}) => {
+const GroupMenu = () => {
+  const { group } = useGroupSlug();
   const [link, setLink] = useState(
-    `https://secure-kharcha.vercel.app/join?group=${groupInfo.uid}&token=${groupInfo.token}`
+    `https://secure-kharcha.vercel.app/join?group=${group?._id}&token=${group?.token}`
   );
   const [copied, setCopied] = useState(false);
   const handleCopyLink = () => {
@@ -58,9 +54,9 @@ const GroupMenu = ({
 
   useEffect(() => {
     setLink(
-      `https://secure-kharcha.vercel.app/join?group=${groupInfo.uid}&token=${groupInfo.token}`
+      `https://secure-kharcha.vercel.app/join?group=${group?._id}&token=${group?.token}`
     );
-  }, [groupInfo]);
+  }, [group]);
 
   useEffect(() => {
     if (!copied) return;
@@ -96,7 +92,7 @@ const GroupMenu = ({
                   id="name"
                   className="col-span-3"
                   placeholder="E.g Family Vacation"
-                  value={groupInfo.name}
+                  value={group?.name}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -107,7 +103,7 @@ const GroupMenu = ({
                   id="description"
                   className="col-span-3"
                   placeholder="Description of the group"
-                  value={groupInfo.description}
+                  value={group?.description}
                 />
               </div>
               <CustomButton type="submit" className="bg-secondary-color">
@@ -178,7 +174,10 @@ const GroupMenu = ({
                 Add a transaction and get added to splitter.
               </DialogDescription>
             </DialogHeader>
-            <TransactionForm />
+            <TransactionForm
+              members={group?.members || []}
+              owner={group?.owner || ({} as UserDetailsInterface)}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -198,13 +197,13 @@ const GroupMenu = ({
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col justify-center items-center">
-              {owner ? (
+              {group?.owner ? (
                 <AspectRatio ratio={4 / 3} className="bg-muted">
                   <QRCodeSVG
                     className="w-full h-full p-4"
                     value={JSON.stringify({
-                      eSewa_id: `${owner?.phoneNumber}`,
-                      name: `${owner?.displayName}`,
+                      eSewa_id: `${group?.owner?.eSewa}`,
+                      name: `${group?.owner?.displayName}`,
                     })}
                   />
                 </AspectRatio>

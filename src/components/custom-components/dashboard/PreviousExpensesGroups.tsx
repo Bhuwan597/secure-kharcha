@@ -6,19 +6,37 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import CreateNew from "./CreateNew";
-import { useGroup } from "@/contexts/group.context";
 import Loading from "@/app/loading";
 import { toast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/user.context";
+import { GroupInterface } from "@/types/group.types";
 
 const PreviousExpensesGroups = () => {
-  const { groups, error, loading } = useGroup();
-  if (loading) return <Loading />;
+  const { userDetails } = useAuth();
+  const { data, isPending, error } = useQuery({
+    queryKey: ["expense-groups"],
+    queryFn: () =>
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/groups`, {
+        headers: { Authorization: `Bearer ${userDetails?.token}` },
+      }).then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw Error(data.message as string);
+        }
+        return data as GroupInterface[];
+      }),
+  });
+
+  if (isPending) {
+    return <Loading />;
+  }
+
   if (error) {
     toast({
       title: "Error",
       description: error.message,
     });
-    return null;
   }
 
   return (
@@ -28,18 +46,18 @@ const PreviousExpensesGroups = () => {
         <CreateNew />
       </div>
       <div className="flex flex-col justify-center items-start gap-4 w-full">
-        {groups && groups.length > 0 ? (
-          groups.map((group, index) => (
+        {data && data.length > 0 ? (
+          data.map((group, index) => (
             <Link
               key={index}
-              href={`/dashboard/splitter/${group?.uid}`}
+              href={`/dashboard/splitter/${group?._id}`}
               className="bg-slate-100 hover:bg-slate-300 dark:bg-slate-900 dark:hover:bg-slate-800 w-full p-2 rounded-lg transition-all ease-in-out duration-200 flex flex-col lg:flex-row justify-between items-center gap-4"
             >
               <div className="flex flex-row justify-center items-center gap-4 flex-wrap">
                 <div className="w-[50px] md:w-[75px]">
                   <AspectRatio ratio={1 / 1}>
                     <Image
-                      src={"/images/test.jpg"}
+                      src={"/images/group.jpg"}
                       alt="Image"
                       fill
                       className="rounded-md object-cover"

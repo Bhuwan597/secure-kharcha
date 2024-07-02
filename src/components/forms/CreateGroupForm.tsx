@@ -20,9 +20,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/user.context";
 import { toast } from "../ui/use-toast";
 import { GroupInterface } from "@/types/group.types";
-import { addDoc, collection, getDoc } from "firebase/firestore";
-import { db } from "@/config/firebase.config";
-import { useGroup } from "@/contexts/group.context";
 
 const CreateGroupForm = ({
   setIsDialogOpen,
@@ -30,47 +27,36 @@ const CreateGroupForm = ({
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { userDetails } = useAuth();
-  const { refetch } = useGroup();
   const form = useForm<z.infer<typeof GroupSchema>>({
     resolver: zodResolver(GroupSchema),
     defaultValues: {
       name: "",
       description: "",
-      coverPhoto: "",
-      owner: userDetails?.uid,
-      createdAt: Date.now().toLocaleString(),
-      token: Math.random().toString(36).substr(2),
     },
   });
   const mutation = useMutation({
     mutationFn: async (formData: z.infer<typeof GroupSchema>) => {
-      const docRef = await addDoc(collection(db, "groups"), {
-        name: formData.name,
-        description: formData.description,
-        owner: formData.owner,
-        members: [formData.owner],
-        token: formData.token,
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/groups`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${userDetails?.token}`,
+        },
+        body: JSON.stringify(formData),
       });
-      if (!docRef) {
-        throw new Error("Failed to create group");
+      const data = await res.json();
+      if (!res.ok) {
+        throw Error(data.message as string);
       }
-      const docSnap = await getDoc(docRef);
-      const groupData = {
-        uid: docSnap.id,
-        ...docSnap.data(),
-      } as GroupInterface;
-      return groupData;
+
+      return data as GroupInterface;
     },
     onSuccess: (data: GroupInterface) => {
       form.reset({
         name: "",
-        coverPhoto: "",
-        description: "",
-        createdAt: "",
-        token: "",
+        description: ""
       });
       setIsDialogOpen(false);
-      refetch();
       toast({
         title: "Successfull.",
         description: `${data.name} group was created.`,
@@ -78,7 +64,8 @@ const CreateGroupForm = ({
     },
     onError: (error) => {
       toast({
-        title: error.message,
+        title: "Error",
+        description: error.message
       });
     },
   });

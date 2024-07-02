@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Rselect, { ActionMeta, MultiValue } from "react-select";
 import { toast } from "@/components/ui/use-toast";
 import { darkModeStyles, lightModeStyles } from "./ReactSlectOptions";
+import { UserDetailsInterface } from "@/contexts/user.context";
 
 const options = [
   { value: "apple", label: "Apple" },
@@ -30,8 +31,9 @@ const options = [
   { value: "mango", label: "Mango" },
 ];
 
-const TransactionForm = () => {
+const TransactionForm = ({owner, members}: {owner: UserDetailsInterface, members: UserDetailsInterface[]}) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const form = useForm<z.infer<typeof TransactionFormSchema>>({
     resolver: zodResolver(TransactionFormSchema),
     defaultValues: {
@@ -40,14 +42,14 @@ const TransactionForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof TransactionFormSchema>) => {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    setLoading(true);
+    try {
+    } catch (error: any) {
+      return toast({
+        title: "Error",
+        description: error.message,
+      });
+    }
   };
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");

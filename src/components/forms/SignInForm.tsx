@@ -35,9 +35,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { AlertDialogFooter, AlertDialogHeader } from "../ui/alert-dialog";
-import { Label } from "../ui/label";
-import { Button } from "../ui/button";
+import { AlertDialogHeader } from "../ui/alert-dialog";
 import ResetPasswordForm from "./ResetPasswordForm";
 
 const SignInForm = () => {
@@ -57,7 +55,7 @@ const SignInForm = () => {
           if (userCredential.user.emailVerified) {
             toast({
               title: "Sign in successfull.",
-               description: `You are now signed in as ${data.email}`
+              description: `You are now signed in as ${data.email}`,
             });
           } else {
             signOut(auth);
@@ -95,23 +93,25 @@ const SignInForm = () => {
         .then(async (result) => {
           const user = result.user;
           const userData = {
-            uid: user.uid,
             displayName: user.displayName,
-            phoneNumber: user.phoneNumber,
             email: user.email,
             provider: user.providerData[0].providerId,
             photo: user.photoURL,
           };
-          await setDoc(doc(db, "users", userData.uid), userData)
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+            method: "POST",
+            body: JSON.stringify(userData),
+          })
             .then((result) => {
               toast({
                 title: "Sign in Successfull.",
-                description: `You are now signed in as ${userData.displayName}`
+                description: `You are now signed in as ${userData.displayName}`,
               });
             })
-            .catch(() => {
+            .catch((error: any) => {
               toast({
                 title: "Error while sign in.",
+                description: error.message,
               });
             });
         })

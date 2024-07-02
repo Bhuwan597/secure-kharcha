@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import {
   Form,
   FormControl,
@@ -19,85 +19,79 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import { toast } from "../ui/use-toast";
-import { auth, db } from "@/config/firebase.config";
-import { doc, setDoc } from "firebase/firestore";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Info } from "lucide-react";
+import { auth } from "@/config/firebase.config";
+import { useMutation } from "@tanstack/react-query";
+import { UserDetailsInterface } from "@/contexts/user.context";
 
+export interface RegistrationApiInterface {
+  message: string;
+  data: UserDetailsInterface;
+}
 const RegisterForm = () => {
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      provider: "password",
+    },
   });
-  const [registerLoading, setRegisterLoading] = useState(false);
-  const [verifyEmail, setVerifyEmail] = useState(false);
-  const onSubmit = async(data: z.infer<typeof RegisterSchema>) => {
-    setRegisterLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, data.email, data.password).then(
-        async ({ user }) => {
-          const userData = {
-            uid: user.uid,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            displayName: data.firstName + " " + data.lastName,
-            phoneNumber: data.phoneNumber,
-            email: user.email,
-            provider: user.providerData[0].providerId,
-            photo: user.photoURL,
-          };
-          await setDoc(doc(db, "users", userData.uid), userData)
-            .then((result) => {
-              form.reset({
-                firstName: "",
-                lastName: "",
-                email: "",
-                phoneNumber: "",
-                password: "",
-                confirmPassword: "",
-              });
-              toast({
-                title: "Registration Successfull.",
-              });
-            })
-            .catch(() => {
-              toast({
-                title: "Error while registration. ",
-              });
-            });
 
-          await sendEmailVerification(user)
-            .then(() => {
-              setVerifyEmail(true);
-            })
-            .catch(() => {
-              toast({
-                title: "Error!",
-                description: "verification email was not sent.",
-              });
-            });
-        }
-      );
-    } catch (error: any) {
-      toast({
-        title: "Error!",
-        description: error.message,
+  const mutation = useMutation({
+    mutationFn: async (formData: z.infer<typeof RegisterSchema>) => {
+      await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      )
+        .then(async ({ user }) => {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/users`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            }
+          );
+          const data = (await response.json()) as RegistrationApiInterface;
+          if (!response.ok) {
+            throw new Error(data.message as string);
+          }
+          await sendEmailVerification(user);
+          return data.data;
+        })
+        .catch((error: any) => {
+          toast({
+            title: "Error",
+            description: error.message,
+          });
+        });
+    },
+    onSuccess: (data) => {
+      form.reset({
+        firstName: "",
+        lastName: "",
+        email: "",
+        eSewa: "",
+        password: "",
+        confirmPassword: "",
+        provider: "",
       });
-    } finally {
-      setRegisterLoading(false);
-    }
+      toast({
+        title: "Registration Successfull",
+        description: "Verify your email address to sign in.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: error.message });
+    },
+  });
+
+  const onSubmit = async (formData: z.infer<typeof RegisterSchema>) => {
+    mutation.mutate(formData);
   };
   return (
     <Form {...form}>
-      {verifyEmail && (
-        <Alert className="bg-yellow-200">
-          <Info size={20} />
-          <AlertTitle>Verification!</AlertTitle>
-          <AlertDescription>
-            Please, verify your email address.
-          </AlertDescription>
-        </Alert>
-      )}
-
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-4 py-4"
@@ -135,15 +129,15 @@ const RegisterForm = () => {
 
         <FormField
           control={form.control}
-          name="phoneNumber"
+          name="eSewa"
           render={({ field }) => (
             <FormItem>
               <div className="flex flex-col gap-2 justify-start items-start">
-                <FormLabel>Phone Number (with country code)</FormLabel>
+                <FormLabel>Esewa Phone Number (with country code)</FormLabel>
                 <FormControl>
                   <Input
                     type="tel"
-                    placeholder="Your phone number"
+                    placeholder="Your eSewa phone number"
                     {...field}
                   />
                 </FormControl>
@@ -209,7 +203,7 @@ const RegisterForm = () => {
         />
 
         <CustomButton
-          loading={registerLoading}
+          loading={mutation.isPending}
           className="w-full bg-secondary-color"
           type="submit"
         >

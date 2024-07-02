@@ -3,23 +3,9 @@ import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { CalendarDays, EllipsisVertical } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { QRCodeSVG } from "qrcode.react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
@@ -41,6 +27,7 @@ const GroupMembers = ({
 }) => {
   const { userDetails } = useAuth();
   if (!members) return;
+  const handleRemoveUserClick = async (uid?: string) => {};
   return (
     <>
       <div className="w-full mt-4">
@@ -52,7 +39,7 @@ const GroupMembers = ({
       <div className="flex flex-row justify-start items-center flex-wrap w-full gap-6">
         {members.map((member) => (
           <div
-            key={member?.uid}
+            key={member?._id}
             className="group-member flex items-center space-x-4 p-4"
           >
             <Avatar>
@@ -90,7 +77,7 @@ const GroupMembers = ({
                               <QRCodeSVG
                                 className="w-full h-full p-4"
                                 value={JSON.stringify({
-                                  eSewa_id: `${member?.phoneNumber}`,
+                                  eSewa_id: `${member?.eSewa}`,
                                   name: `${member?.displayName}`,
                                 })}
                               />
@@ -104,14 +91,24 @@ const GroupMembers = ({
                             <CardTitle>Settings</CardTitle>
                           </CardHeader>
                           <CardFooter>
-                            {member?.uid === userDetails?.uid ? (
-                              <CustomButton className="bg-red-600">
+                            {member?._id === userDetails?._id ? (
+                              <CustomButton
+                                onClick={() =>
+                                  handleRemoveUserClick(member?._id)
+                                }
+                                className="bg-red-600"
+                              >
                                 Leave this group
                               </CustomButton>
                             ) : (
                               <>
-                                {userDetails?.uid === owner?.uid && (
-                                  <CustomButton className="bg-red-600">
+                                {userDetails?._id === owner?._id && (
+                                  <CustomButton
+                                    onClick={() =>
+                                      handleRemoveUserClick(member?._id)
+                                    }
+                                    className="bg-red-600"
+                                  >
                                     Remove {member?.firstName}
                                   </CustomButton>
                                 )}

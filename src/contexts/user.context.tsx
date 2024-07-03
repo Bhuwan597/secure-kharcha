@@ -8,8 +8,6 @@ import React, {
   createContext,
   useContext,
   useState,
-  useMemo,
-  useCallback,
   useEffect,
 } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -42,68 +40,68 @@ export const AuthContextProvider = ({
   const [userDetails, setUserDetails] = useState<UserDetailsInterface | null>(
     null
   );
-  const contextValue = useMemo(() => ({ userDetails }), [userDetails]);
 
-  const fetchUser = useCallback(async () => {
+  const fetchUser = async () => {
     if (!user) return null;
     const token = await user.getIdToken(true);
     if (!token) return null;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      if (!res.ok) {
+        throw new Error("User data fetch failed.");
+      }
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message);
+      const data = await res.json();
+      return { ...data, token };
+    } catch (error) {
+      throw new Error("User data not found.");
     }
+  };
 
-    const data = await res.json();
-    setUserDetails({
-      ...data,
-      token: token,
-    });
-
-    return data;
-  }, [user]);
-
-  const {
-    data,
-    isLoading,
-    error: fetchError,
-  } = useQuery({
-    queryKey: ["user-details"],
+  const { data, isFetching, error: fetchError } = useQuery({
+    queryKey: ["user-details", user?.uid],
     queryFn: fetchUser,
     enabled: !!user,
   });
+  useEffect(() => {
+    if (data) {
+      setUserDetails(data);
+    }
+  }, [data]);
 
   useEffect(() => {
-    if (!user) {
-      setUserDetails(null);
+    if (fetchError) {
+      toast({
+        title: "Authentication error.",
+        description: fetchError.message,
+      });
+      signOut(auth);
     }
-  }, [user]);
+  }, [fetchError]);
 
-  const isAuthenticating = isLoading || loading;
-
-  // Move conditional rendering logic outside the hook calls
-  if (isAuthenticating) {
+  if (loading || isFetching) {
     return <Loading />;
   }
 
-  if (authError || fetchError) {
+  if (authError) {
     toast({
       title: "Authentication error.",
-      description: authError?.message || fetchError?.message,
+      description: authError.message,
     });
     signOut(auth);
     return null;
   }
 
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ userDetails }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 

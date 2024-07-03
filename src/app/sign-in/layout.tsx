@@ -6,36 +6,16 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Loading from "../loading";
+import { useAuth } from "@/contexts/user.context";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
 
-  useEffect(() => {
-    if (loading) return; // Do nothing while loading
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-      });
-      signOut(auth);
-    } else if (user?.emailVerified) {
-      router.replace("/dashboard");
-    }
-  }, [loading, error, user, router]);
-
-  if (loading) {
-    return <Loading />;
-  }
-
-
-  return (
-    <>
-      {children}
-    </>
-  );
+  const { userDetails } = useAuth();
+  if (userDetails) return router.push("/dashboard");
+  return <>{children}</>;
 }

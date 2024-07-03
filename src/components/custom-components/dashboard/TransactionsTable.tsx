@@ -41,286 +41,230 @@ import {
 } from "@/components/ui/table";
 import ContainerSection from "@/components/partials/ContainerSection";
 import { Separator } from "@/components/ui/separator";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { GroupInterface } from "@/types/group.types";
+import { TransactionInterface } from "@/types/transaction.types";
+import { UserDetailsInterface } from "@/contexts/user.context";
+import { calculateNepaliDateAndTime } from "@/lib/date_calculations";
+import { Badge } from "@/components/ui/badge";
+import { calculatePersonalExpense } from "@/lib/expense_calculations";
 
-export type Payment = {
-  id: string;
-  amount: number;
-  status: "pending" | "pending" | "success" | "success";
-  user: string;
-  date: string;
+export const tableColumns = (group: {
+  transactions: TransactionInterface[];
+  members: UserDetailsInterface[];
+}): ColumnDef<TransactionInterface>[] => {
+  const data = group.transactions;
+  const totalMembers = group.members.length;
+  return [
+    {
+      accessorKey: "transactionBy",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Transaction By
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const result = calculatePersonalExpense(
+          data || [],
+          row.original.transactionBy._id,
+          totalMembers
+        );
+        return (
+          <div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="link" className="">
+                  <div className="font-medium underline">
+                    {row.original.transactionBy.displayName}
+                  </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-fit">
+                <div className="flex justify-start space-x-4">
+                  <Avatar>
+                    <AvatarImage
+                      src={
+                        row.original.transactionBy.photo ||
+                        "/images/default-user.svg"
+                      }
+                    />
+                    <AvatarFallback>
+                      {row.original.transactionBy.displayName}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-semibold">
+                      {row.original.transactionBy.displayName}
+                    </h4>
+                    <div className="flex flex-row items-center gap-4">
+                      <span className="font-medium text-xs">Group Contribution</span>
+                      <span>
+                        {new Intl.NumberFormat("en-NP", {
+                          style: "currency",
+                          currency: "NPR",
+                        }).format(result.contribution)}
+                      </span>
+                    </div>
+                    <div className={"flex flex-row items-center gap-4"}>
+                      <span className="font-medium text-xs">Group Expense</span>
+                      <span>
+                        {new Intl.NumberFormat("en-NP", {
+                          style: "currency",
+                          currency: "NPR",
+                        }).format(result.totalExpense)}
+                      </span>
+                    </div>
+                    <div className={"flex flex-row items-center gap-4"}>
+                      <span className="font-medium text-xs">Personal Expense</span>
+                      <span>
+                        {new Intl.NumberFormat("en-NP", {
+                          style: "currency",
+                          currency: "NPR",
+                        }).format(result.personalExpense)}
+                      </span>
+                    </div>
+                    <div className={"flex flex-row items-center gap-4"}>
+                      <span className="font-medium text-xs">Balance</span>
+                      <span
+                        className={
+                          result.balance < 0 ? "text-red-600" : "text-green-600"
+                        }
+                      >
+                        {new Intl.NumberFormat("en-NP", {
+                          style: "currency",
+                          currency: "NPR",
+                        }).format(result.balance)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "split",
+      header: ({ column }) => <div className="w-full text-center">Info</div>,
+      cell: ({ row }) => (
+        <div className="flex flex-col gap-2 items-center">
+          <div className="capitalize text-center">
+            {row.getValue("split") ? (
+              <Badge variant={"outline"} className="text-green-500">
+                Splitted
+              </Badge>
+            ) : (
+              <Badge variant={"outline"} className="text-red-500">
+                Not Splitted
+              </Badge>
+            )}
+          </div>
+          {(row.getValue("excluded") as UserDetailsInterface[])?.map((user) => {
+            <p>Excluding:</p>;
+            return <p key={user._id} className="mx-2">{user.firstName}</p>;
+          })}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "amount",
+      header: ({ column }) => (
+        <div className="w-full flex flex-row justify-center items-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Amount
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const amount = parseFloat(row.getValue("amount"));
+
+        // Format the amount as a dollar amount
+        const formatted = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "NPR",
+        }).format(amount);
+
+        return (
+          <div className="text-center font-medium text-green-600">
+            {formatted}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Date",
+      cell: ({ row }) => (
+        <div className="flex flex-col justify-center items-start gap-2">
+          <span>
+            {calculateNepaliDateAndTime(row.getValue("createdAt")).nepaliDate}
+          </span>
+          <span>
+            {calculateNepaliDateAndTime(row.getValue("createdAt")).time}
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Action",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const payment = row.original;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(payment._id)}
+              >
+                Copy payment ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>View customer</DropdownMenuItem>
+              <DropdownMenuItem>View payment details</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 };
 
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    user: "ken99@yahoo.com",
-    date: "yesterday",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    user: "Abe45@gmail.com",
-    date: "today",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "pending",
-    user: "Monserrat44@gmail.com",
-    date: "3 days ago",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    user: "Silas22@gmail.com",
-    date: "1 month ago",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "success",
-    user: "carmella@hotmail.com",
-    date: "just now",
-  },
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    user: "ken99@yahoo.com",
-    date: "yesterday",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    user: "Abe45@gmail.com",
-    date: "today",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "pending",
-    user: "Monserrat44@gmail.com",
-    date: "3 days ago",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    user: "Silas22@gmail.com",
-    date: "1 month ago",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "success",
-    user: "carmella@hotmail.com",
-    date: "just now",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "pending",
-    user: "Monserrat44@gmail.com",
-    date: "3 days ago",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    user: "Silas22@gmail.com",
-    date: "1 month ago",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "success",
-    user: "carmella@hotmail.com",
-    date: "just now",
-  },
-  {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    user: "ken99@yahoo.com",
-    date: "yesterday",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    user: "Abe45@gmail.com",
-    date: "today",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "pending",
-    user: "Monserrat44@gmail.com",
-    date: "3 days ago",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    user: "Silas22@gmail.com",
-    date: "1 month ago",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "success",
-    user: "carmella@hotmail.com",
-    date: "just now",
-  },
-];
-
-export const columns: ColumnDef<Payment>[] = [
-  {
-    accessorKey: "user",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          User
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="link" className="">
-              <div className="font-medium underline">
-                {row.getValue("user")}
-              </div>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-fit">
-            <div className="flex justify-start space-x-4">
-              <Avatar>
-                <AvatarImage src="https://github.com/vercel.png" />
-                <AvatarFallback>BU</AvatarFallback>
-              </Avatar>
-              <div className="space-y-1">
-                <h4 className="text-sm font-semibold">
-                  {row.getValue("user")}
-                </h4>
-                <div className="flex flex-row items-center gap-4">
-                  <span className="font-medium text-xs">Contribution</span>
-                  <span>
-                    {new Intl.NumberFormat("en-NP", {
-                      style: "currency",
-                      currency: "NPR",
-                    }).format(1200)}
-                  </span>
-                </div>
-                <div className={"flex flex-row items-center gap-4"}>
-                  <span className="font-medium text-xs">Balance</span>
-                  <span
-                    className={-120 < 0 ? "text-red-600" : "text-green-600"}
-                  >
-                    {new Intl.NumberFormat("en-NP", {
-                      style: "currency",
-                      currency: "NPR",
-                    }).format(-120)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
-  },
-  {
-    accessorKey: "amount",
-    header: ({ column }) => (
-      <div className="w-full flex flex-row justify-center items-center">
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-        Amount
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-        </div>
-    ),
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "NPR",
-      }).format(amount);
-
-      return <div className="text-center font-medium text-green-600">{formatted}</div>;
-    },
-  },
-  {
-    accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => <div>{row.getValue("date")}</div>,
-  },
-  {
-    id: "actions",
-    header: "Action",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
-
-export function TransactionsTable() {
+export function TransactionsTable({
+  group,
+  calculatePersonalExpense,
+}: {
+  group: GroupInterface | null;
+  calculatePersonalExpense: (
+    transactions: TransactionInterface[],
+    userId: string,
+    members: number
+  ) => any;
+}) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -329,8 +273,11 @@ export function TransactionsTable() {
     React.useState<VisibilityState>({});
 
   const table = useReactTable({
-    data,
-    columns,
+    data: group?.transactions || [],
+    columns: tableColumns({
+      transactions: group?.transactions || [],
+      members: group?.members || [],
+    }),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -425,7 +372,7 @@ export function TransactionsTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={table.getAllColumns().length}
                   className="h-24 text-center"
                 >
                   No results.

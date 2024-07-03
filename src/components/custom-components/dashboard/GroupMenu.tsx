@@ -40,9 +40,12 @@ import GenerateLink from "./GenerateLink";
 import { UserDetailsInterface } from "@/contexts/user.context";
 import { GroupInterface } from "@/types/group.types";
 import { useGroupSlug } from "@/contexts/group-slug.context";
+import UpdateGroupInfoForm from "@/components/forms/UpdateGroupInfoForm";
 
 const GroupMenu = () => {
   const { group } = useGroupSlug();
+  const [editGroupDialog, setEditGroupDialog] = useState<boolean>(false)
+  const [addTransactionDialog, setAddTransactionDialog] = useState<boolean>(false)
   const [link, setLink] = useState(
     `https://secure-kharcha.vercel.app/join?group=${group?._id}&token=${group?.token}`
   );
@@ -68,7 +71,7 @@ const GroupMenu = () => {
   return (
     <ContainerSection className="flex flex-row justify-between items-center mt-6">
       <div className="flex flex-row justify-center items-center gap-4">
-        <Dialog>
+        <Dialog open={editGroupDialog} onOpenChange={setEditGroupDialog}>
           <DialogTrigger asChild>
             <CustomButton className="flex flex-row justify-center items-center gap-2 bg-secondary-color">
               <Settings size={20} />
@@ -83,34 +86,7 @@ const GroupMenu = () => {
                 you&apos;re done.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Group Name
-                </Label>
-                <Input
-                  id="name"
-                  className="col-span-3"
-                  placeholder="E.g Family Vacation"
-                  value={group?.name}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  className="col-span-3"
-                  placeholder="Description of the group"
-                  value={group?.description}
-                />
-              </div>
-              <CustomButton type="submit" className="bg-secondary-color">
-                <Save className="mr-2 h-4 w-4" />
-                Save
-              </CustomButton>
-            </div>
+            <UpdateGroupInfoForm setIsDialogOpen={setEditGroupDialog} group={group}/>
           </DialogContent>
         </Dialog>
 
@@ -160,7 +136,7 @@ const GroupMenu = () => {
           </DialogContent>
         </Dialog>
 
-        <Dialog>
+        <Dialog open={addTransactionDialog} onOpenChange={setAddTransactionDialog}>
           <DialogTrigger asChild>
             <CustomButton className="flex flex-row justify-center items-center gap-2 bg-black ring-1">
               <BadgeDollarSign size={20} />
@@ -175,8 +151,8 @@ const GroupMenu = () => {
               </DialogDescription>
             </DialogHeader>
             <TransactionForm
-              members={group?.members || []}
-              owner={group?.owner || ({} as UserDetailsInterface)}
+              group={group}
+              setIsDialogOpen={setAddTransactionDialog}
             />
           </DialogContent>
         </Dialog>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import ExpenseChart from "@/components/custom-components/dashboard/ExpenseChart";
+import TransactionsChart from "@/components/custom-components/dashboard/TransactionsChart";
 import ExpenseSummary from "@/components/custom-components/dashboard/ExpenseSummary";
 import GroupMembers from "@/components/custom-components/dashboard/GroupMembers";
 import GroupMenu from "@/components/custom-components/dashboard/GroupMenu";
@@ -9,23 +9,17 @@ import RecentActivities from "@/components/custom-components/dashboard/RecentAct
 import { TransactionsTable } from "@/components/custom-components/dashboard/TransactionsTable";
 import ContainerSection from "@/components/partials/ContainerSection";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CameraIcon } from "lucide-react";
 import Image from "next/image";
-import { doc, getDoc, query, where } from "firebase/firestore";
-import { db } from "@/config/firebase.config";
-import { GroupInterface } from "@/types/group.types";
-import { useQuery } from "@tanstack/react-query";
-import { UserDetailsInterface, useAuth } from "@/contexts/user.context";
-import Loading from "@/app/loading";
-import { toast } from "@/components/ui/use-toast";
-import { notFound } from "next/navigation";
 import { useGroupSlug } from "@/contexts/group-slug.context";
+import { calculateNepaliDateAndTime } from "@/lib/date_calculations";
+import {
+  calculatePersonalExpense,
+  calculateTotalExpense,
+} from "@/lib/expense_calculations";
 
-const GroupInfo = ({ slug }: { slug: string }) => {
+const GroupInfo = () => {
   const { group } = useGroupSlug();
-
+  const groupResult = calculateTotalExpense(group?.transactions || [])
   return (
     <>
       <Heading title={group?.name} />
@@ -47,23 +41,31 @@ const GroupInfo = ({ slug }: { slug: string }) => {
           {group?.name}
         </h3>
         <p className="font-medium">Created by {group?.owner.displayName}</p>
-        <p className="text-sm">{group?.createdAt}</p>
+        <p className="text-sm flex flex-col gap-2 justify-center items-center">
+          <span>{calculateNepaliDateAndTime(group?.createdAt).nepaliDate}</span>
+          <span>{calculateNepaliDateAndTime(group?.createdAt).time}</span>
+        </p>
         <div className="mx-auto mb-5.5 mt-4.5 grid max-w-94 grid-cols-3 rounded-md border border-stroke py-2.5 shadow-1 dark:border-strokedark dark:bg-[#37404F]">
           <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">
             <span className="font-semibold text-black dark:text-white">
-              Rs. 25945
+              {new Intl.NumberFormat("en-NP", {
+                style: "currency",
+                currency: "NPR",
+              }).format(
+                groupResult.totalGroupExpense
+              )}
             </span>
             <span className="text-sm">Expense</span>
           </div>
           <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">
             <span className="font-semibold text-black dark:text-white">
-              {group?.transactions?.length || 0}
+              {groupResult.groupTransactions}(+{groupResult.personalTransactions})
             </span>
             <span className="text-sm">Transactions</span>
           </div>
           <div className="flex flex-col items-center justify-center gap-1 px-4 xsm:flex-row">
             <span className="font-semibold text-black dark:text-white">
-              {group?.members.length || 0}
+             {group?.members.length || 0}
             </span>
             <span className="text-sm">Members</span>
           </div>
@@ -75,12 +77,15 @@ const GroupInfo = ({ slug }: { slug: string }) => {
           </h4>
           <p className="mt-4.5">{group?.description}</p>
         </div>
-        {/* <GroupMembers owner={owner} members={members} /> */}
+        <GroupMembers group={group} />
       </ContainerSection>
       <RecentActivities />
-      <TransactionsTable />
-      <ExpenseChart />
-      <ExpenseSummary />
+      <TransactionsTable
+        group={group}
+        calculatePersonalExpense={calculatePersonalExpense}
+      />
+      <TransactionsChart transactions={group?.transactions || []} />
+      <ExpenseSummary group={group} />
     </>
   );
 };

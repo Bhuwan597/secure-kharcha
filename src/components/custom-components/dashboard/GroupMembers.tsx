@@ -16,18 +16,17 @@ import {
 } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import CustomButton from "../CustomButton";
-import { UserDetailsInterface, useAuth } from "@/contexts/user.context";
+import { useAuth } from "@/contexts/user.context";
+import { GroupInterface } from "@/types/group.types";
 
 const GroupMembers = ({
-  members,
-  owner,
+  group
 }: {
-  members: (UserDetailsInterface | null)[] | null;
-  owner: UserDetailsInterface | null;
+  group: GroupInterface | null
 }) => {
   const { userDetails } = useAuth();
-  if (!members) return;
-  const handleRemoveUserClick = async (uid?: string) => {};
+  if (!group || !group.members) return;
+  const handleRemoveUserClick = async (userId?: string) => {};
   return (
     <>
       <div className="w-full mt-4">
@@ -37,13 +36,13 @@ const GroupMembers = ({
         <Separator className="my-4" />
       </div>
       <div className="flex flex-row justify-start items-center flex-wrap w-full gap-6">
-        {members.map((member) => (
+        {group.members.map((member) => (
           <div
             key={member?._id}
             className="group-member flex items-center space-x-4 p-4"
           >
-            <Avatar>
-              <AvatarImage src={member?.photo} alt={member?.displayName} />
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={member?.photo || "/images/default-user.svg"} alt={member?.displayName} />
               <AvatarFallback>{member?.firstName}</AvatarFallback>
             </Avatar>
             <div>
@@ -102,7 +101,7 @@ const GroupMembers = ({
                               </CustomButton>
                             ) : (
                               <>
-                                {userDetails?._id === owner?._id && (
+                                {userDetails?._id === group.owner?._id && (
                                   <CustomButton
                                     onClick={() =>
                                       handleRemoveUserClick(member?._id)

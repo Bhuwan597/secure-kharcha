@@ -4,12 +4,7 @@ import { toast } from "@/components/ui/use-toast";
 import { auth } from "@/config/firebase.config";
 import { useQuery } from "@tanstack/react-query";
 import { signOut } from "firebase/auth";
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 const AuthContext = createContext<{ userDetails: UserDetailsInterface | null }>(
@@ -18,16 +13,16 @@ const AuthContext = createContext<{ userDetails: UserDetailsInterface | null }>(
 
 export interface UserDetailsInterface {
   _id?: string;
-  firstName?: string;
-  lastName?: string;
-  displayName?: string;
-  email?: string;
-  eSewa?: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  email: string;
+  eSewa: string;
   photo?: string;
-  provider?: string;
+  provider: string;
   token?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
   emailVerified: boolean;
 }
 
@@ -58,22 +53,29 @@ export const AuthContextProvider = ({
       }
 
       const data = await res.json();
+      setUserDetails({ ...data, token });
       return { ...data, token };
     } catch (error) {
       throw new Error("User data not found.");
     }
   };
 
-  const { data, isFetching, error: fetchError } = useQuery({
+  const {
+    data,
+    isFetching,
+    error: fetchError,
+  } = useQuery({
     queryKey: ["user-details", user?.uid],
     queryFn: fetchUser,
     enabled: !!user,
   });
+
   useEffect(() => {
-    if (data) {
-      setUserDetails(data);
+    if (!user && !loading) {
+      setUserDetails(null);
+      signOut(auth);
     }
-  }, [data]);
+  }, [user, loading]);
 
   useEffect(() => {
     if (fetchError) {

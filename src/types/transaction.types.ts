@@ -1,9 +1,12 @@
+import { UserDetailsInterface } from "@/contexts/user.context";
+
 export interface TransactionInterface {
-  doneBy: string;
+  _id: string;
+  transactionBy: UserDetailsInterface;
   title: string;
-  description: string;
-  amount: string;
-  isSplit: boolean;
-  excludedMembers?: string[];
+  amount: number;
+  split: boolean;
+  excludedMembers?: UserDetailsInterface[];
   createdAt: string;
+  updatedAt: string;
 }

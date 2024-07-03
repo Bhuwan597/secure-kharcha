@@ -1,4 +1,5 @@
 import { UserDetailsInterface } from "@/contexts/user.context";
+import { TransactionInterface } from "./transaction.types";
 
 export interface GroupInterface {
   _id: string;
@@ -7,7 +8,7 @@ export interface GroupInterface {
   coverPhoto?: string;
   owner: UserDetailsInterface;
   members: UserDetailsInterface[];
-  transactions?: string[];
+  transactions?: TransactionInterface[];
   activities?: string[];
   token?: string[];
   createdAt?: string;

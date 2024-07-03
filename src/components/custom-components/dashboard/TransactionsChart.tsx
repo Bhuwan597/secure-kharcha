@@ -1,9 +1,17 @@
-"use client"
+"use client";
 import ContainerSection from "@/components/partials/ContainerSection";
-import React from 'react'
+import { generateTransactionGraphData } from "@/lib/expense_calculations";
+import { TransactionInterface } from "@/types/transaction.types";
+import React from "react";
 import ReactApexChart from "react-apexcharts";
 
-const ExpenseChart = () => {
+const TransactionsChart = ({
+  transactions,
+}: {
+  transactions: TransactionInterface[] | [];
+}) => {
+  if(!transactions) return;
+  const result = generateTransactionGraphData(transactions);
   // Define colors and styles for light mode
   const lightModeColors = {
     background: "#ffffff",
@@ -11,8 +19,6 @@ const ExpenseChart = () => {
     secondary: "#3182ce", // Accent color for light mode
     gridColor: "#f3f3f3",
   };
-
-
 
   return (
     <ContainerSection className="my-10 dark:text-dark-color">
@@ -46,17 +52,7 @@ const ExpenseChart = () => {
             },
           },
           xaxis: {
-            categories: [
-              "Jan",
-              "Feb",
-              "Mar",
-              "Apr",
-              "May",
-              "Jun",
-              "Jul",
-              "Aug",
-              "Sep",
-            ],
+            categories: result.map(r=>r.label),
             labels: {
               style: {
                 colors: lightModeColors.primary,
@@ -67,7 +63,7 @@ const ExpenseChart = () => {
         series={[
           {
             name: "Expense",
-            data: [120, 230, 510, 1040, 7000, 7510, 8190, 9100, 10500],
+            data: result.map(r=>r.value),
           },
         ]}
         type="line"
@@ -76,4 +72,4 @@ const ExpenseChart = () => {
   );
 };
 
-export default ExpenseChart;
+export default TransactionsChart;

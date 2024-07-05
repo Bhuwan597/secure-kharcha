@@ -38,16 +38,16 @@ const GroupMembers = ({
       <div className="flex flex-row justify-start items-center flex-wrap w-full gap-6">
         {group.members.map((member) => (
           <div
-            key={member?._id}
+            key={member.user?._id}
             className="group-member flex items-center space-x-4 p-4"
           >
             <Avatar className="h-20 w-20">
-              <AvatarImage src={member?.photo || "/images/default-user.svg"} alt={member?.displayName} />
-              <AvatarFallback>{member?.firstName}</AvatarFallback>
+              <AvatarImage src={member.user?.photo || "/images/default-user.svg"} alt={member.user?.displayName} />
+              <AvatarFallback>{member.user?.firstName}</AvatarFallback>
             </Avatar>
             <div>
               <div className="w-full flex flex-row justify-between items-center">
-                <div className="font-medium">{member?.displayName}</div>
+                <div className="font-medium">{member.user?.displayName}</div>
                 <Dialog>
                   <DialogTrigger>
                     <EllipsisVertical
@@ -76,8 +76,8 @@ const GroupMembers = ({
                               <QRCodeSVG
                                 className="w-full h-full p-4"
                                 value={JSON.stringify({
-                                  eSewa_id: `${member?.eSewa}`,
-                                  name: `${member?.displayName}`,
+                                  eSewa_id: `${member.user?.eSewa}`,
+                                  name: `${member.user?.displayName}`,
                                 })}
                               />
                             </AspectRatio>
@@ -90,10 +90,10 @@ const GroupMembers = ({
                             <CardTitle>Settings</CardTitle>
                           </CardHeader>
                           <CardFooter>
-                            {member?._id === userDetails?._id ? (
+                            {member.user?._id === userDetails?._id ? (
                               <CustomButton
                                 onClick={() =>
-                                  handleRemoveUserClick(member?._id)
+                                  handleRemoveUserClick(member.user?._id)
                                 }
                                 className="bg-red-600"
                               >
@@ -104,11 +104,11 @@ const GroupMembers = ({
                                 {userDetails?._id === group.owner?._id && (
                                   <CustomButton
                                     onClick={() =>
-                                      handleRemoveUserClick(member?._id)
+                                      handleRemoveUserClick(member.user?._id)
                                     }
                                     className="bg-red-600"
                                   >
-                                    Remove {member?.firstName}
+                                    Remove {member.user?.firstName}
                                   </CustomButton>
                                 )}
                               </>
@@ -120,12 +120,12 @@ const GroupMembers = ({
                   </DialogContent>
                 </Dialog>
               </div>
-              <div className="text-sm text-gray-500">{member?.email}</div>
+              <div className="text-sm text-gray-500">{member.user?.email}</div>
               <div className="flex items-center pt-2">
                 <CalendarDays className="mr-2 h-4 w-4 opacity-70" />{" "}
                 <span className="text-xs text-muted-foreground">
                   Joined through{" "}
-                  {member?.provider === "password" ? "Email" : "Google"}
+                  {member.user?.provider === "password" ? "Email" : "Google"}
                 </span>
               </div>
             </div>

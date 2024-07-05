@@ -8,9 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GroupInterface } from "@/types/group.types";
-import { calculatePersonalExpense } from "@/lib/expense_calculations";
+import { GroupInterface, GroupMemberInterface } from "@/types/group.types";
+import { calculatePersonalExpense, getJoinedDate } from "@/lib/expense_calculations";
 import { UserDetailsInterface } from "@/contexts/user.context";
+import { useGroupSlug } from "@/contexts/group-slug.context";
 
 const ExpenseCard = ({
   user,
@@ -73,7 +74,8 @@ const ExpenseCard = ({
   );
 };
 
-const ExpenseSummary = ({ group }: { group: GroupInterface | null }) => {
+const ExpenseSummary = () => {
+  const {group, getExpenseOfUser} = useGroupSlug()
   if (!group || !group.members) return;
   return (
     <>
@@ -85,20 +87,16 @@ const ExpenseSummary = ({ group }: { group: GroupInterface | null }) => {
           <Separator className="my-4" />
         </div>
         <div className="flex flex-row gap-4 flex-wrap items-center justify-center sm:justify-start">
-          {group.members.map((member) => {
-            const result = calculatePersonalExpense(
-              group.transactions,
-              member._id,
-              group.members.length
-            );
+          {group.members.map((member : GroupMemberInterface) => {
+            const result = getExpenseOfUser(member.user._id)
             return (
               <ExpenseCard
-                user={member}
+                user={member.user}
                 balance={result.balance}
-                contribution={result.contribution}
-                totalExpense={result.totalExpense}
+                contribution={result.groupContribution}
+                totalExpense={result.groupExpense}
                 personalExpense={result.personalExpense}
-                key={member._id}
+                key={member.user._id}
               />
             );
           })}

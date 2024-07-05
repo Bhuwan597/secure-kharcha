@@ -1,17 +1,16 @@
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import React, { useState } from "react";
+import CustomButton from "../custom-components/CustomButton";
 
-export function AlertDialogDemo({
+export function ConfirmAction({
   isOpen,
   setIsOpen,
   loading,
@@ -20,8 +19,16 @@ export function AlertDialogDemo({
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
-  continueFunction: Function
+  continueFunction: ()=> Promise<void>
 }) {
+  const okFunction = async()=>{
+    try {      
+      await continueFunction();
+      setIsOpen(false)
+    } catch (error) {
+      setIsOpen(false)
+    }
+  }
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent>
@@ -34,7 +41,7 @@ export function AlertDialogDemo({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction >Continue</AlertDialogAction>
+          <CustomButton className="bg-secondary-color" loading={loading} onClick={okFunction} >Continue</CustomButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,13 +1,18 @@
 import { UserDetailsInterface } from "@/contexts/user.context";
 import { TransactionInterface } from "./transaction.types";
 
+export interface GroupMemberInterface{
+  user: UserDetailsInterface;
+  createdAt: string
+}
+
 export interface GroupInterface {
   _id: string;
   name: string;
   description: string;
-  coverPhoto?: string;
+  photo?: string;
   owner: UserDetailsInterface;
-  members: UserDetailsInterface[];
+  members: GroupMemberInterface[];
   transactions?: TransactionInterface[];
   activities?: string[];
   token?: string[];

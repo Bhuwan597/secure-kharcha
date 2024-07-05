@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import {
   ColumnDef,
@@ -13,21 +12,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  CalendarDays,
-  ChevronDown,
-  MoreHorizontal,
-} from "lucide-react";
+import { ArrowUpDown, ChevronDown, PenSquareIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -49,17 +40,29 @@ import {
 } from "@/components/ui/popover";
 import { GroupInterface } from "@/types/group.types";
 import { TransactionInterface } from "@/types/transaction.types";
-import { UserDetailsInterface } from "@/contexts/user.context";
 import { calculateNepaliDateAndTime } from "@/lib/date_calculations";
 import { Badge } from "@/components/ui/badge";
-import { calculatePersonalExpense } from "@/lib/expense_calculations";
+import { useGroupSlug } from "@/contexts/group-slug.context";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import UpdateTransactionForm from "@/components/forms/UpdateTransactionForm";
 
-export const tableColumns = (group: {
-  transactions: TransactionInterface[];
-  members: UserDetailsInterface[];
-}): ColumnDef<TransactionInterface>[] => {
-  const data = group.transactions;
-  const totalMembers = group.members.length;
+export const tableColumns = (
+  group: GroupInterface | null,
+  getExpenseOfUser: (userId?: string | null | undefined) => {
+    groupExpense: number;
+    personalExpense: number;
+    groupContribution: number;
+    balance: number;
+  },
+  updateTransactionOpen: boolean,
+  setUpdateTransactionOpen: React.Dispatch<React.SetStateAction<boolean>>
+): ColumnDef<TransactionInterface>[] => {
   return [
     {
       accessorKey: "transactionBy",
@@ -75,11 +78,7 @@ export const tableColumns = (group: {
         );
       },
       cell: ({ row }) => {
-        const result = calculatePersonalExpense(
-          data || [],
-          row.original.transactionBy._id,
-          totalMembers
-        );
+        const result = getExpenseOfUser(row.original.transactionBy._id);
         return (
           <div>
             <Popover>
@@ -108,12 +107,14 @@ export const tableColumns = (group: {
                       {row.original.transactionBy.displayName}
                     </h4>
                     <div className="flex flex-row items-center gap-4">
-                      <span className="font-medium text-xs">Group Contribution</span>
+                      <span className="font-medium text-xs">
+                        Group Contribution
+                      </span>
                       <span>
                         {new Intl.NumberFormat("en-NP", {
                           style: "currency",
                           currency: "NPR",
-                        }).format(result.contribution)}
+                        }).format(result.groupContribution)}
                       </span>
                     </div>
                     <div className={"flex flex-row items-center gap-4"}>
@@ -122,11 +123,13 @@ export const tableColumns = (group: {
                         {new Intl.NumberFormat("en-NP", {
                           style: "currency",
                           currency: "NPR",
-                        }).format(result.totalExpense)}
+                        }).format(result.groupExpense)}
                       </span>
                     </div>
                     <div className={"flex flex-row items-center gap-4"}>
-                      <span className="font-medium text-xs">Personal Expense</span>
+                      <span className="font-medium text-xs">
+                        Personal Expense
+                      </span>
                       <span>
                         {new Intl.NumberFormat("en-NP", {
                           style: "currency",
@@ -156,6 +159,11 @@ export const tableColumns = (group: {
       },
     },
     {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => <div className="">{row.original.title}</div>,
+    },
+    {
       accessorKey: "split",
       header: ({ column }) => <div className="w-full text-center">Info</div>,
       cell: ({ row }) => (
@@ -171,10 +179,26 @@ export const tableColumns = (group: {
               </Badge>
             )}
           </div>
-          {(row.getValue("excluded") as UserDetailsInterface[])?.map((user) => {
-            <p>Excluding:</p>;
-            return <p key={user._id} className="mx-2">{user.firstName}</p>;
-          })}
+          {(row.original?.exclude?.length || -1) > 0 && (
+            <Popover>
+              <PopoverTrigger>
+                <p className="text-xs underline">
+                  {row.original.exclude?.length} excluded
+                </p>
+              </PopoverTrigger>
+              <PopoverContent className="flex flex-col gap-2 justify-center items-start">
+                <div className="font-bold">Excluded Members:</div>
+                {row.original.exclude?.map((user) => {
+                  return (
+                    <p key={user._id} className="flex flex-col">
+                      <span>{user.displayName}</span>
+                      <span className="text-xs">{user.email}</span>
+                    </p>
+                  );
+                })}
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       ),
     },
@@ -226,58 +250,48 @@ export const tableColumns = (group: {
       header: "Action",
       enableHiding: false,
       cell: ({ row }) => {
-        const payment = row.original;
-
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <Dialog
+            open={updateTransactionOpen}
+            onOpenChange={setUpdateTransactionOpen}
+          >
+            <DialogTrigger>
+              {" "}
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <PenSquareIcon className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(payment._id)}
-              >
-                Copy payment ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View customer</DropdownMenuItem>
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Update Transaction</DialogTitle>
+              </DialogHeader>
+              <UpdateTransactionForm
+                setIsDialogOpen={setUpdateTransactionOpen}
+                group={group}
+              />
+            </DialogContent>
+          </Dialog>
         );
       },
     },
   ];
 };
 
-export function TransactionsTable({
-  group,
-  calculatePersonalExpense,
-}: {
-  group: GroupInterface | null;
-  calculatePersonalExpense: (
-    transactions: TransactionInterface[],
-    userId: string,
-    members: number
-  ) => any;
-}) {
+export function TransactionsTable() {
+  const { group, getExpenseOfUser } = useGroupSlug();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
+    const [updateTransactionOpen, setUpdateTransactionOpen] =
+    React.useState<boolean>(false);
 
   const table = useReactTable({
     data: group?.transactions || [],
-    columns: tableColumns({
-      transactions: group?.transactions || [],
-      members: group?.members || [],
-    }),
+    columns: tableColumns(group, getExpenseOfUser, updateTransactionOpen, setUpdateTransactionOpen),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -298,10 +312,10 @@ export function TransactionsTable({
       <Separator className="my-4" />
       <div className="flex items-center gap-2 py-4">
         <Input
-          placeholder="Filter users..."
-          value={(table.getColumn("user")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter transactions..."
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("user")?.setFilterValue(event.target.value)
+            table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

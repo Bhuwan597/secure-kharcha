@@ -6,7 +6,7 @@ export interface TransactionInterface {
   title: string;
   amount: number;
   split: boolean;
-  excludedMembers?: UserDetailsInterface[];
+  exclude?: [UserDetailsInterface];
   createdAt: string;
   updatedAt: string;
 }

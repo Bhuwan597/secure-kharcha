@@ -37,6 +37,8 @@ import {
 } from "../ui/dialog";
 import { AlertDialogHeader } from "../ui/alert-dialog";
 import ResetPasswordForm from "./ResetPasswordForm";
+import { useMutation } from "@tanstack/react-query";
+import { UserDetailsInterface } from "@/contexts/user.context";
 
 const SignInForm = () => {
   const [googleLoginLoading, setGoogleLoginLoading] = useState(false);
@@ -45,6 +47,37 @@ const SignInForm = () => {
 
   const form = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
+  });
+
+  const mutation = useMutation({
+    mutationKey: ["register-google-user"],
+    mutationFn: async (userData: any) => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message as string);
+      }
+
+      return data as UserDetailsInterface;
+    },
+    onSuccess: (data: UserDetailsInterface) => {
+      return toast({
+        title: "Sign in Successfull.",
+        description: `You are now signed in as ${data.displayName}`,
+      });
+    },
+    onError: (error) => {
+      return toast({
+        title: "Error while sign in.",
+        description: error.message,
+      });
+    },
   });
 
   const onSubmit = async (data: z.infer<typeof SignInSchema>) => {
@@ -91,6 +124,7 @@ const SignInForm = () => {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider)
         .then(async (result) => {
+          console.log(result.user);
           const user = result.user;
           const userData = {
             displayName: user.displayName,
@@ -98,22 +132,7 @@ const SignInForm = () => {
             provider: user.providerData[0].providerId,
             photo: user.photoURL,
           };
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-            method: "POST",
-            body: JSON.stringify(userData),
-          })
-            .then((result) => {
-              toast({
-                title: "Sign in Successfull.",
-                description: `You are now signed in as ${userData.displayName}`,
-              });
-            })
-            .catch((error: any) => {
-              toast({
-                title: "Error while sign in.",
-                description: error.message,
-              });
-            });
+          await mutation.mutate(userData);
         })
         .catch((error: any) => {
           toast({

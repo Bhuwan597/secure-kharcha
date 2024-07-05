@@ -16,23 +16,25 @@ import {
   calculatePersonalExpense,
   calculateTotalExpense,
 } from "@/lib/expense_calculations";
+import UpdateGroupImage from "@/components/forms/UpdateGroupImage";
 
 const GroupInfo = () => {
-  const { group } = useGroupSlug();
-  const groupResult = calculateTotalExpense(group?.transactions || [])
+  const { group, getExpenseOfUser } = useGroupSlug();
+  const groupResult = calculateTotalExpense(group?.transactions || []);
   return (
     <>
       <Heading title={group?.name} />
       <ContainerSection>
-        <div className="w-full relative">
-          <AspectRatio ratio={16 / 5}>
+        <div className="w-full relative border rounded-lg border-secondary-color">
+          <AspectRatio ratio={16 / 9}>
             <Image
               fill
-              src="/images/group.jpg"
+              src={group?.photo || "/images/group.jpg"}
               alt="Image"
               className="rounded-md object-cover"
             />
           </AspectRatio>
+          <UpdateGroupImage group={group} />
         </div>
       </ContainerSection>
       <GroupMenu />
@@ -51,21 +53,20 @@ const GroupInfo = () => {
               {new Intl.NumberFormat("en-NP", {
                 style: "currency",
                 currency: "NPR",
-              }).format(
-                groupResult.totalGroupExpense
-              )}
+              }).format(groupResult.totalGroupExpense)}
             </span>
             <span className="text-sm">Expense</span>
           </div>
           <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-strokedark xsm:flex-row">
             <span className="font-semibold text-black dark:text-white">
-              {groupResult.groupTransactions}(+{groupResult.personalTransactions})
+              {groupResult.groupTransactions}(+
+              {groupResult.personalTransactions})
             </span>
             <span className="text-sm">Transactions</span>
           </div>
           <div className="flex flex-col items-center justify-center gap-1 px-4 xsm:flex-row">
             <span className="font-semibold text-black dark:text-white">
-             {group?.members.length || 0}
+              {group?.members.length || 0}
             </span>
             <span className="text-sm">Members</span>
           </div>
@@ -80,12 +81,9 @@ const GroupInfo = () => {
         <GroupMembers group={group} />
       </ContainerSection>
       <RecentActivities />
-      <TransactionsTable
-        group={group}
-        calculatePersonalExpense={calculatePersonalExpense}
-      />
+      <TransactionsTable />
       <TransactionsChart transactions={group?.transactions || []} />
-      <ExpenseSummary group={group} />
+      <ExpenseSummary />
     </>
   );
 };

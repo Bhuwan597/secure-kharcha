@@ -47,7 +47,7 @@ const GroupMenu = () => {
   const [editGroupDialog, setEditGroupDialog] = useState<boolean>(false)
   const [addTransactionDialog, setAddTransactionDialog] = useState<boolean>(false)
   const [link, setLink] = useState(
-    `https://secure-kharcha.vercel.app/join?group=${group?._id}&token=${group?.token}`
+    `${process.env.NEXT_PUBLIC_URL}/join?group=${group?._id}&token=${group?.token}`
   );
   const [copied, setCopied] = useState(false);
   const handleCopyLink = () => {
@@ -57,7 +57,7 @@ const GroupMenu = () => {
 
   useEffect(() => {
     setLink(
-      `https://secure-kharcha.vercel.app/join?group=${group?._id}&token=${group?.token}`
+      `${process.env.NEXT_PUBLIC_URL}/join?group=${group?._id}&token=${group?.token}`
     );
   }, [group]);
 

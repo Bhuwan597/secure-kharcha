@@ -7,7 +7,7 @@ import { Save } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import TransactionFormSchema from "../../../schemas/transaction.schema";
+import UpdateTransactionFormSchema from "../../../schemas/transaction.schema";
 import {
   Form,
   FormControl,
@@ -24,7 +24,7 @@ import { useMutation } from "@tanstack/react-query";
 import { TransactionInterface } from "@/types/transaction.types";
 import { GroupInterface } from "@/types/group.types";
 
-const TransactionForm = ({
+const UpdateTransactionForm = ({
   group,
   setIsDialogOpen,
 }: {
@@ -33,15 +33,15 @@ const TransactionForm = ({
 }) => {
   const { userDetails } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const form = useForm<z.infer<typeof TransactionFormSchema>>({
-    resolver: zodResolver(TransactionFormSchema),
+  const form = useForm<z.infer<typeof UpdateTransactionFormSchema>>({
+    resolver: zodResolver(UpdateTransactionFormSchema),
     defaultValues: {
       group: group?._id,
       split: true,
     },
   });
   const mutation = useMutation({
-    mutationFn: async (formData: z.infer<typeof TransactionFormSchema>) => {
+    mutationFn: async (formData: z.infer<typeof UpdateTransactionFormSchema>) => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/transactions`,
         {
@@ -90,7 +90,7 @@ const TransactionForm = ({
       };
     });
 
-  const onSubmit = async (data: z.infer<typeof TransactionFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof UpdateTransactionFormSchema>) => {
     mutation.mutate(data);
   };
   useEffect(() => {
@@ -217,4 +217,4 @@ const TransactionForm = ({
   );
 };
 
-export default TransactionForm;
+export default UpdateTransactionForm;

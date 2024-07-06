@@ -18,6 +18,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import CustomButton from "../CustomButton";
 import { useAuth } from "@/contexts/user.context";
 import { GroupInterface } from "@/types/group.types";
+import { extractPhoneNumber } from "@/lib/phone-number";
 
 const GroupMembers = ({
   group
@@ -76,7 +77,7 @@ const GroupMembers = ({
                               <QRCodeSVG
                                 className="w-full h-full p-4"
                                 value={JSON.stringify({
-                                  eSewa_id: `${member.user?.eSewa}`,
+                                  eSewa_id: `${extractPhoneNumber(member.user?.eSewa)}`,
                                   name: `${member.user?.displayName}`,
                                 })}
                               />

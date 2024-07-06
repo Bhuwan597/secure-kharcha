@@ -9,9 +9,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/user.context";
 import { ConfirmAction } from "../partials/ConfirmAction";
 import ButtonLoader from "../partials/ButtonLoader";
+import { useGroupSlug } from "@/contexts/group-slug.context";
 
-const UpdateGroupImage = ({ group }: { group: GroupInterface | null }) => {
+const UpdateGroupImage = () => {
   const { userDetails } = useAuth();
+  const {group, refetch} = useGroupSlug()
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [image, setImage] = useState<File | null>(null);
   const [uploadLoading, setUploadLoading] = useState(false)
@@ -64,6 +66,7 @@ const UpdateGroupImage = ({ group }: { group: GroupInterface | null }) => {
   }, [image, handleUpload]);
 
   const mutation = useMutation({
+    mutationKey: ["group-image-upload", group?._id],
     mutationFn: async ({
       url,
       group,
@@ -93,6 +96,7 @@ const UpdateGroupImage = ({ group }: { group: GroupInterface | null }) => {
       toast({
         title: "Successfully updated",
       });
+      return refetch();
     },
     onError: (error) => {
       toast({

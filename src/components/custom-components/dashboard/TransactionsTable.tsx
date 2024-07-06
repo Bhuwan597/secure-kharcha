@@ -12,7 +12,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, PenSquareIcon } from "lucide-react";
+import { ArrowUpDown, ChevronDown, PenSquareIcon, UserCog } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -61,7 +61,11 @@ export const tableColumns = (
     balance: number;
   },
   updateTransactionOpen: boolean,
-  setUpdateTransactionOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setUpdateTransactionOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  transactionToBeUpdated: TransactionInterface | null,
+  setTransactionToBeUpdated: React.Dispatch<
+    React.SetStateAction<TransactionInterface | null>
+  >
 ): ColumnDef<TransactionInterface>[] => {
   return [
     {
@@ -84,8 +88,9 @@ export const tableColumns = (
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="link" className="">
-                  <div className="font-medium underline">
+                  <div className="font-medium underline flex flex-row gap-2 items-center">
                     {row.original.transactionBy.displayName}
+                    {row.original.transactionBy._id === group?.owner._id && <UserCog size={20} />}
                   </div>
                 </Button>
               </PopoverTrigger>
@@ -255,8 +260,9 @@ export const tableColumns = (
             open={updateTransactionOpen}
             onOpenChange={setUpdateTransactionOpen}
           >
-            <DialogTrigger>
-              {" "}
+            <DialogTrigger
+              onClick={() => setTransactionToBeUpdated(row.original)}
+            >
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
                 <PenSquareIcon className="h-4 w-4" />
@@ -268,7 +274,7 @@ export const tableColumns = (
               </DialogHeader>
               <UpdateTransactionForm
                 setIsDialogOpen={setUpdateTransactionOpen}
-                group={group}
+                transaction={transactionToBeUpdated}
               />
             </DialogContent>
           </Dialog>
@@ -286,12 +292,22 @@ export function TransactionsTable() {
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-    const [updateTransactionOpen, setUpdateTransactionOpen] =
+  const [updateTransactionOpen, setUpdateTransactionOpen] =
     React.useState<boolean>(false);
 
+  const [transactionToBeUpdated, setTransactionToBeUpdated] =
+    React.useState<TransactionInterface | null>(null);
+
   const table = useReactTable({
-    data: group?.transactions || [],
-    columns: tableColumns(group, getExpenseOfUser, updateTransactionOpen, setUpdateTransactionOpen),
+    data: group?.transactions?.sort((a,b)=> new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) || [],
+    columns: tableColumns(
+      group,
+      getExpenseOfUser,
+      updateTransactionOpen,
+      setUpdateTransactionOpen,
+      transactionToBeUpdated,
+      setTransactionToBeUpdated
+    ),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),

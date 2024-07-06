@@ -34,7 +34,7 @@ const GroupInfo = () => {
               className="rounded-md object-cover"
             />
           </AspectRatio>
-          <UpdateGroupImage group={group} />
+          <UpdateGroupImage/>
         </div>
       </ContainerSection>
       <GroupMenu />

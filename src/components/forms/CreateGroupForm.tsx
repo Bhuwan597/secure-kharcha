@@ -22,8 +22,10 @@ import { toast } from "../ui/use-toast";
 import { GroupInterface } from "@/types/group.types";
 
 const CreateGroupForm = ({
+  refetch,
   setIsDialogOpen,
 }: {
+  refetch: ()=> void,
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { userDetails } = useAuth();
@@ -61,6 +63,7 @@ const CreateGroupForm = ({
         title: "Successfull.",
         description: `${data.name} group was created.`,
       });
+      return refetch()
     },
     onError: (error) => {
       toast({

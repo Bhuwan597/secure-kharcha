@@ -18,6 +18,14 @@ interface GroupSlugContextType {
     groupContribution: number;
     balance: number;
   };
+  getTransactionsOfUser: (
+    userId?: string | null
+  ) => TransactionInterface[] | [];
+  calculateMembersOfTransaction: (
+    transaction?: TransactionInterface | null,
+    userId?: string | null
+  ) => number;
+  refetch: () => void;
 }
 
 const GroupSlugContext = createContext<GroupSlugContextType>({
@@ -30,6 +38,12 @@ const GroupSlugContext = createContext<GroupSlugContextType>({
     groupContribution: 0,
     balance: 0,
   }),
+  getTransactionsOfUser: (userId?: string | null) => [],
+  calculateMembersOfTransaction: (
+    transaction?: TransactionInterface | null,
+    userId?: string | null
+  ) => 0,
+  refetch: () => {},
 });
 
 const fetchGroupBySlug = async (slug: string, token?: string) => {
@@ -55,7 +69,7 @@ export const GroupSlugProvider = ({
   children: React.ReactNode;
 }) => {
   const { userDetails } = useAuth();
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["group-slug-data", userDetails?._id],
     queryFn: async () => await fetchGroupBySlug(slug, userDetails?.token),
     enabled: !!slug,
@@ -74,7 +88,7 @@ export const GroupSlugProvider = ({
   };
 
   const getTransactionsOfUser = (userId?: string | null) => {
-    if (!userId) return;
+    if (!userId) return [];
     const transactionsOfUser = data.transactions?.filter(
       (transaction) =>
         (transaction.split || transaction.transactionBy._id === userId) &&
@@ -92,12 +106,13 @@ export const GroupSlugProvider = ({
   ) => {
     if (!transaction) return 0;
     let excludedMembers = transaction.exclude?.length || 0;
-    let lateJoinedMembers = data.members
-      .filter(
-        (member) =>
-          new Date(member.createdAt) >= new Date(transaction.createdAt)
-      )
-      .filter((member) => member.user._id !== userId).length ?? 0;
+    let lateJoinedMembers =
+      data.members
+        .filter(
+          (member) =>
+            new Date(member.createdAt) >= new Date(transaction.createdAt)
+        )
+        .filter((member) => member.user._id !== userId).length ?? 0;
     // console.log(userId, lateJoinedMembers);
     let totalGroupMembers = data.members.length;
     return totalGroupMembers - excludedMembers - lateJoinedMembers;
@@ -144,6 +159,9 @@ export const GroupSlugProvider = ({
         isPending: isPending,
         error: error,
         getExpenseOfUser,
+        getTransactionsOfUser,
+        calculateMembersOfTransaction,
+        refetch,
       }}
     >
       {children}

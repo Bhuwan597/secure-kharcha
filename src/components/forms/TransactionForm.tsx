@@ -23,15 +23,15 @@ import { UserDetailsInterface, useAuth } from "@/contexts/user.context";
 import { useMutation } from "@tanstack/react-query";
 import { TransactionInterface } from "@/types/transaction.types";
 import { GroupInterface } from "@/types/group.types";
+import { useGroupSlug } from "@/contexts/group-slug.context";
 
 const TransactionForm = ({
-  group,
   setIsDialogOpen,
 }: {
-  group: GroupInterface | null;
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { userDetails } = useAuth();
+  const {group, refetch}= useGroupSlug()
   const [isDarkMode, setIsDarkMode] = useState(false);
   const form = useForm<z.infer<typeof TransactionFormSchema>>({
     resolver: zodResolver(TransactionFormSchema),
@@ -72,6 +72,7 @@ const TransactionForm = ({
         title: "Successfull.",
         description: `${data.title} transaction created.`,
       });
+      refetch()
     },
     onError: (error) => {
       toast({

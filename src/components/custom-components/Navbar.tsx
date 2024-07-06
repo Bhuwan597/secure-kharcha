@@ -42,13 +42,7 @@ const navLinks: NavLinksInterface[] = [
         path: "/splitter",
         description:
           "The Splitter service in Secure Kharcha simplifies expense splitting among groups, ensuring accurate calculations and transparent tracking. Effortlessly manage shared expenses with real-time updates and easy settlement options.",
-      },
-      {
-        title: "Expense Tracker",
-        path: "/expense-tracker",
-        description:
-          "The Expense Tracker service in Secure Kharcha helps you manage your finances with ease. Track your expenses, categorize transactions, and gain insights into your spending habits.",
-      },
+      }
     ],
   },
   { title: "About", path: "/about" },

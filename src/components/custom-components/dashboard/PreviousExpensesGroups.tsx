@@ -16,7 +16,7 @@ import { calculateTotalExpense } from "@/lib/expense_calculations";
 
 const PreviousExpensesGroups = () => {
   const { userDetails } = useAuth();
-  const { data, isPending, error } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["expense-groups"],
     queryFn: () =>
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/groups`, {
@@ -44,7 +44,7 @@ const PreviousExpensesGroups = () => {
     <ContainerSection className="flex flex-col gap-6 justify-center items-start">
       <div className="flex flex-row justify-between items-center gap-4 w-full flex-wrap">
         <h2 className="text-lg font-semibold italic">Expenses Groups</h2>
-        <CreateNew />
+        <CreateNew refetch={refetch}/>
       </div>
       <div className="flex flex-col justify-center items-start gap-4 w-full">
         {data && data.length > 0 ? (
@@ -60,7 +60,7 @@ const PreviousExpensesGroups = () => {
                   <div className="w-[50px] md:w-[75px]">
                     <AspectRatio ratio={1 / 1}>
                       <Image
-                        src={"/images/group.jpg"}
+                        src={group.photo || "/images/group.jpg"}
                         alt="Image"
                         fill
                         className="rounded-md object-cover"

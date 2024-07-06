@@ -41,6 +41,7 @@ import { UserDetailsInterface } from "@/contexts/user.context";
 import { GroupInterface } from "@/types/group.types";
 import { useGroupSlug } from "@/contexts/group-slug.context";
 import UpdateGroupInfoForm from "@/components/forms/UpdateGroupInfoForm";
+import { extractPhoneNumber } from "@/lib/phone-number";
 
 const GroupMenu = () => {
   const { group } = useGroupSlug();
@@ -86,7 +87,7 @@ const GroupMenu = () => {
                 you&apos;re done.
               </DialogDescription>
             </DialogHeader>
-            <UpdateGroupInfoForm setIsDialogOpen={setEditGroupDialog} group={group}/>
+            <UpdateGroupInfoForm setIsDialogOpen={setEditGroupDialog}/>
           </DialogContent>
         </Dialog>
 
@@ -151,7 +152,6 @@ const GroupMenu = () => {
               </DialogDescription>
             </DialogHeader>
             <TransactionForm
-              group={group}
               setIsDialogOpen={setAddTransactionDialog}
             />
           </DialogContent>
@@ -178,7 +178,7 @@ const GroupMenu = () => {
                   <QRCodeSVG
                     className="w-full h-full p-4"
                     value={JSON.stringify({
-                      eSewa_id: `${group?.owner?.eSewa}`,
+                      eSewa_id: `${extractPhoneNumber(group?.owner?.eSewa)}`,
                       name: `${group?.owner?.displayName}`,
                     })}
                   />

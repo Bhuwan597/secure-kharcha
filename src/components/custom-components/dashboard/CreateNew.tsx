@@ -12,7 +12,7 @@ import {  Users } from "lucide-react";
 import CustomButton from "@/components/custom-components/CustomButton";
 import CreateGroupForm from "@/components/forms/CreateGroupForm";
 
-const CreateNew = () => {
+const CreateNew = ({refetch}: {refetch: ()=> void}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -30,7 +30,7 @@ const CreateNew = () => {
             when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <CreateGroupForm setIsDialogOpen={setIsDialogOpen} />
+        <CreateGroupForm refetch={refetch} setIsDialogOpen={setIsDialogOpen} />
       </DialogContent>
     </Dialog>
   );

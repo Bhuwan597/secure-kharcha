@@ -33,14 +33,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
-import CustomButton from "../CustomButton";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/user.context";
 
 const dashboardLinks = [
-  { title: "Expense Splitter", path: "/dashboard/splitter", Icon: Divide },
-  { title: "Expense Tracker", path: "/dashboard/tracker", Icon: TrendingUp },
+  { title: "Expense Splitter", path: "/dashboard/splitter", Icon: Divide }
 ];
 
 const Sidebar = () => {
@@ -145,7 +143,7 @@ const Sidebar = () => {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer">
+                    <DropdownMenuItem onClick={()=> router.push('/dashboard')} className="cursor-pointer">
                       Profile
                     </DropdownMenuItem>
                     <DropdownMenuItem

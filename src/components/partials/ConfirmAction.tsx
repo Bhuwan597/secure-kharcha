@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import React, { useState } from "react";
 import CustomButton from "../custom-components/CustomButton";
+import { useMutation } from "@tanstack/react-query";
 
 export function ConfirmAction({
   isOpen,
@@ -19,16 +20,13 @@ export function ConfirmAction({
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
-  continueFunction: ()=> Promise<void>
+  continueFunction: ()=> void
 }) {
-  const okFunction = async()=>{
-    try {      
-      await continueFunction();
-      setIsOpen(false)
-    } catch (error) {
-      setIsOpen(false)
-    }
-  }
+  const mutation = useMutation({
+    mutationKey: ["delete-transaction-using-modal"],
+    mutationFn: async()=> await continueFunction(),
+    onSuccess: ()=> setIsOpen(false)
+  })
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent>
@@ -41,7 +39,7 @@ export function ConfirmAction({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <CustomButton className="bg-secondary-color" loading={loading} onClick={okFunction} >Continue</CustomButton>
+          <CustomButton className="bg-secondary-color" loading={mutation.isPending || loading} onClick={()=>mutation.mutate()} >Continue</CustomButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

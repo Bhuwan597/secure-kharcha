@@ -20,15 +20,15 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { useGroupSlug } from "@/contexts/group-slug.context";
 
 const UpdateGroupInfoForm = ({
-  group,
   setIsDialogOpen,
 }: {
-  group: GroupInterface | null;
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { userDetails } = useAuth();
+  const {group, refetch} = useGroupSlug();
   const form = useForm<z.infer<typeof GroupSchema>>({
     resolver: zodResolver(GroupSchema),
     defaultValues: {
@@ -66,6 +66,7 @@ const UpdateGroupInfoForm = ({
         title: "Successfully Updated",
         description: `${data.name} group has been updated.`,
       });
+      return refetch();
     },
     onError: (error) => {
       toast({

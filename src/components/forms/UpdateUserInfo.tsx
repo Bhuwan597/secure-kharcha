@@ -71,7 +71,7 @@ const UpdateInfoForm = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-4 mb-20"
           >
             <p>
               Account Creation: {result.nepaliDate} ({result.time})
